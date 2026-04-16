@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
+use App\Http\Controllers\Admin\ProductController;
 
 // ─── المسارات العامة (الجميع) ─────────────────────────────
 Route::get('/', [ProductViewController::class, 'welcome'])->name('welcome');
@@ -111,7 +112,7 @@ Route::middleware('auth')->group(function () {
             Route::resource('categories', CategoryController::class);
             Route::patch('/categories/{category}/toggle-status', [CategoryController::class, 'toggleStatus'])->name('categories.toggleStatus');
 
-            Route::resource('products', ProductViewController::class)->except(['show']);
+            Route::resource('products', ProductController::class)->except(['show']);
 
             Route::resource('orders', OrderController::class)->only(['index', 'show']);
             Route::patch('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.updateStatus');
