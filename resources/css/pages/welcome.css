@@ -1,0 +1,47 @@
+/* Scroll reveal */
+.reveal { opacity: 0; transform: translateY(32px); transition: opacity .7s ease, transform .7s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.delay-1 { transition-delay: .1s; }
+.delay-2 { transition-delay: .2s; }
+.delay-3 { transition-delay: .3s; }
+.delay-4 { transition-delay: .4s; }
+
+/* Badge blink */
+@keyframes blink { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.5)} }
+.badge-dot { animation: blink 2s infinite; }
+
+/* Float badges */
+@keyframes floatY { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+.float-1 { animation: floatY 3s ease-in-out infinite; }
+.float-2 { animation: floatY 3s ease-in-out infinite 1.5s; }
+
+/* Hero title underline */
+.hl { position:relative; display:inline-block; }
+.hl::after {
+    content:''; position:absolute; bottom:4px; left:0; right:0;
+    height:3px; background:linear-gradient(90deg,#f59e0b,transparent); border-radius:2px;
+}
+
+/* Ticker */
+@keyframes ticker { from{transform:translateX(-50%)} to{transform:translateX(0)} }
+.ticker-track { animation: ticker 22s linear infinite; }
+
+/* Fade up */
+@keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+.anim-1 { animation: fadeUp .5s ease both; }
+.anim-2 { animation: fadeUp .6s ease both .1s; }
+.anim-3 { animation: fadeUp .6s ease both .2s; }
+.anim-4 { animation: fadeUp .6s ease both .3s; }
+.anim-5 { animation: fadeUp .6s ease both .4s; }
+
+/* Slider scrollbar hide */
+.slider-track { scrollbar-width: none; }
+.slider-track::-webkit-scrollbar { display: none; }
+
+/* Card hover glow */
+.feat-card::before {
+    content:''; position:absolute; top:0; right:0; width:90px; height:90px;
+    background:radial-gradient(circle,rgba(245,158,11,0.1),transparent 70%);
+    opacity:0; transition:opacity .3s;
+}
+.feat-card:hover::before { opacity:1; }

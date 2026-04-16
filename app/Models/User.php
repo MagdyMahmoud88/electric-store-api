@@ -1,17 +1,20 @@
 <?php
 
 namespace App\Models;
-
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
+use App\Models\CartItem;
+use App\Models\Order;
+use App\Models\Wishlist;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
+
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable,HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
@@ -46,4 +49,41 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function cartItems():HasMany
+    {
+        return $this->hasMany(CartItem::class);
+    }
+
+    public function orders():HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function wishlists():HasMany
+    {
+        return $this->hasMany(Wishlist::class);
+    }
+   public function hasInWishlist(int $productId): bool
+{
+   return $this->wishlists()->where('product_id', $productId)->exists();
+}
+
+// ══ أضيف في User model ══
+
+public function reviews(): HasMany
+{
+    return $this->hasMany(Review::class);
+}
+
+// هل اليوزر راجع المنتج ده قبل كده؟
+public function hasReviewed(int $productId): bool
+{
+    return $this->reviews()->where('product_id', $productId)->exists();
+}
+
+public function addresses(): HasMany
+{
+    return $this->hasMany(Address::class);
+}
 }

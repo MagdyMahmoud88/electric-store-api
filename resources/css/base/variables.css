@@ -1,0 +1,77 @@
+ :root {
+            --bg-deep:    #070810;
+            --bg:         #0b0d16;
+            --surface:    #111420;
+            --surface2:   #181c2e;
+            --border:     #1e2235;
+            --border-hover: #2e3450;
+            --accent:     #3b82f6;
+            --accent-dim: rgba(59,130,246,0.10);
+            --accent-glow:rgba(59,130,246,0.25);
+            --electric:   #f59e0b;
+            --electric-dim: rgba(245,158,11,0.10);
+            --electric-glow:rgba(245,158,11,0.28);
+            --text:       #e8eaf6;
+            --text-muted: #4a5068;
+            --text-soft:  #7c84a8;
+            --success:    #22c55e;
+            --danger:     #ef4444;
+            --amber:      #f59e0b;
+            --radius:     16px;
+            --radius-sm:  10px;
+        }
+        /* Light theme */
+[data-theme="light"] {
+    --bg-deep:    #f0f2f8;
+    --bg:         #f8f9fc;
+    --surface:    #ffffff;
+    --surface2:   #eef0f7;
+    --border:     #dde1ef;
+    --border-hover: #c5cbde;
+    --electric:   #d97706;
+    --electric-dim: rgba(217,119,6,0.10);
+    --electric-glow:rgba(217,119,6,0.28);
+    --text:       #1a1d2e;
+    --text-muted: #9098b8;
+    --text-soft:  #5a6080;
+}
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: var(--bg-deep);
+            color: var(--text);
+            direction: rtl;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── SCROLLBAR ── */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--electric); }
+
+        /* ── MAIN CONTENT ── */
+        .main-content { flex: 1; }
+
+        .wishlist-btn {
+    @apply btn btn-sm btn-ghost border border-base-300 w-9 p-0 flex-shrink-0;
+    transition: all .2s;
+}
+.wishlist-btn:hover {
+    @apply border-error text-error;
+}
+.wishlist-btn.active i {
+    @apply text-error;
+}
+
+        /* ── UTILITIES ── */
+        .page-container { max-width: 1400px; margin: 0 auto; padding: 0 32px; }
+        @media (max-width: 768px) { .page-container { padding: 0 16px; } }

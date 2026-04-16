@@ -36,8 +36,11 @@ return [
     */
 
     'mailers' => [
-
+'resend' => [
+        'transport' => 'resend',
+    ],
         'smtp' => [
+
             'transport' => 'smtp',
             'scheme' => env('MAIL_SCHEME'),
             'url' => env('MAIL_URL'),

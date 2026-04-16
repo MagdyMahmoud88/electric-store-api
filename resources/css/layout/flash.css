@@ -1,0 +1,40 @@
+.flash-container {
+    max-width: 1400px;
+    margin: 16px auto 0;
+    padding: 0 32px;
+}
+.flash-success {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(34,197,94,.08);
+    border: 1px solid rgba(34,197,94,.25);
+    border-radius: var(--radius-sm);
+    padding: 12px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #86efac;
+}
+.flash-error {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(239,68,68,.08);
+    border: 1px solid rgba(239,68,68,.25);
+    border-radius: var(--radius-sm);
+    padding: 12px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #fca5a5;
+}
+.flash-close {
+    margin-right: auto;
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    opacity: .6;
+    font-size: 16px;
+}
+.flash-close:hover { opacity: 1; }
+@media (max-width: 768px) { .flash-container { padding: 0 16px; } }
