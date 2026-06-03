@@ -140,22 +140,30 @@
 
                             {{-- User --}}
                             <td class="py-4 px-5">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0"
-                                         style="background:var(--electric-dim);color:var(--electric);border:1px solid rgba(245,158,11,.25);">
-                                        {{ strtoupper(substr($order->user->name, 0, 1)) }}
-                                    </div>
-                                    <div>
-                                        <p class="font-bold text-xs" style="color:var(--text);">{{ $order->user->name }}</p>
-                                        <p class="text-[11px]" style="color:var(--text-muted);">{{ $order->user->email }}</p>
-                                    </div>
+
+                                {{-- الرمز الدائري للحرف الأول من الاسم --}}
+                                <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0"
+                                     style="background:var(--electric-dim);color:var(--electric);border:1px solid rgba(245,158,11,.25);">
+                                    {{ strtoupper(substr($order->user?->name ?? 'G', 0, 1)) }}
                                 </div>
+
+            <div>
+                {{-- اسم العميل --}}
+                <p class="font-bold text-xs" style="color:var(--text);">
+                    {{ $order->user?->name ?? 'عميل محذوف/زائر' }}
+                </p>
+                {{-- بريد العميل --}}
+                <p class="text-[11px]" style="color:var(--text-muted);">
+                    {{ $order->user?->email ?? 'N/A' }}
+                </p>
+            </div>
+
                             </td>
 
                             {{-- Items count --}}
                             <td class="py-4 px-5">
                                 <span class="text-xs font-bold" style="color:var(--text-soft);">
-                                    {{ $order->orderItems->sum('quantity') }} منتج
+                                    {{ $order->items->sum('quantity') }} منتج
                                 </span>
                             </td>
 

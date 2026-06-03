@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\ActivityLogger;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -64,6 +65,7 @@ class PasswordResetController extends Controller
                 ])->save();
 
                 event(new PasswordReset($user));
+                ActivityLogger::passwordReset($user);
             }
         );
 

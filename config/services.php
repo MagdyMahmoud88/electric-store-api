@@ -13,6 +13,12 @@ return [
     | a conventional file to locate the various service credentials.
     |
     */
+    'kashier' => [
+        'merchant_id'    => env('KASHIER_MERCHANT_ID'),
+        'api_key'        => env('KASHIER_API_KEY'),
+        'webhook_secret' => env('KASHIER_WEBHOOK_SECRET'),  // الـ secret بتستخدمه في الـ HMAC
+        'mode'           => env('KASHIER_MODE', 'test'),     // test | live
+    ],
 
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),

@@ -4,146 +4,179 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Product;
 use App\Models\CartItem;
+
 class CartController extends Controller
 {
-    // ─── جلب السلة وعرضها ────────────────────────────────────────────
+    // ─── Helper: جيب السلة من المكان الصح ──────────────
+    private function getCart(): array
+    {
+        if (Auth::check()) {
+            return CartItem::with('product')
+                ->where('user_id', Auth::id())
+                ->get()
+                ->mapWithKeys(function ($item) {
+                    $product = $item->product;
+                    $price = $product->final_price;
+
+
+                    return [$item->product_id => [
+                        'product_id' => $item->product_id,
+                        'name'       => $product->name,
+                        'price'      => $price,
+                        'image'      => $product->image_url ? asset('storage/' . $product->image_url) : null,
+                        'brand'      => $product->brand->name ?? null,
+                        'variant'    => $item->variant,
+                        'quantity'   => $item->quantity,
+                    ]];
+                })
+                ->toArray();
+        }
+
+        return session('cart', []);
+    }
+
+    // ─── Helper: احفظ السلة في المكان الصح ─────────────
+    private function saveCart(array $cart): void
+    {
+        if (Auth::check()) {
+            // DB — امسح القديم واحفظ الجديد
+            CartItem::where('user_id', Auth::id())->delete();
+
+            foreach ($cart as $productId => $item) {
+                CartItem::create([
+                    'user_id'    => Auth::id(),
+                    'product_id' => $productId,
+                    'variant'    => $item['variant'] ?? null,
+                    'quantity'   => $item['quantity'],
+                ]);
+            }
+        } else {
+            session(['cart' => $cart]);
+        }
+    }
+
+    // ─── index ──────────────────────────────────────────
     public function index()
     {
-        $cart  = session()->get('cart', []);
-        $total = collect($cart)->sum(fn($item) => $item['price'] * $item['quantity']);
+        $cart = $this->getCart();
 
-        return view('cart.index', compact('cart', 'total' ));
+        $suggested = Product::when(
+            !empty($cart),
+            fn($q) => $q->whereNotIn('id', array_keys($cart))
+        )
+        ->inRandomOrder()
+        ->take(4)
+        ->get();
+
+        return view('cart.index', compact('cart', 'suggested'));
     }
 
-    // ─── إضافة منتج للسلة ────────────────────────────────────────────
-  public function add(Request $request, $productId)
-{
-    $product = \App\Models\Product::findOrFail($productId);
+    // ─── add ────────────────────────────────────────────
+    public function add(Request $request, $productId)
+    {
+        $request->validate([
+            'variant' => 'nullable|string|max:255',
+        ]);
 
-    $cart = session()->get('cart', []);
+        $product = Product::findOrFail($productId);
+        $cart    = $this->getCart();
 
-    if (isset($cart[$productId])) {
-        $cart[$productId]['quantity'] += $request->input('quantity', 1);
-    } else {
-        $cart[$productId] = [
-            'name'     => $product->name,
-            'price'    => $product->price,
-            'image'    => $product->image_url ?? $product->image ?? '',
-            'quantity' => $request->input('quantity', 1),
-        ];
+     $product = Product::findOrFail($productId);
+     $cart    = $this->getCart();
+
+     $currentQty = $cart[$productId]['quantity'] ?? 0;
+     $maxStock   = $product->stock ?? 99;
+
+     if ($currentQty >= $maxStock) {
+         return back()->with('error', 'لا يمكن إضافة كمية أكبر من المتاح');
+     }
+
+     if (isset($cart[$productId])) {
+         $cart[$productId]['quantity']++;
+
+        } else {
+         $price = $product->final_price;
+
+
+         $cart[$productId] = [
+                'product_id' => $product->id,
+                'name'       => $product->name,
+                'price'      => $price,
+                'image'      => $product->image_url ? asset('storage/' . $product->image_url) : null,
+                'brand'      => $product->brand->name ?? null,
+                'variant'    => $request->input('variant'),
+                'quantity'   => 1,
+            ];
+        }
+
+        $this->saveCart($cart);
+        session()->forget('coupon');
+
+        return back()->with('success', 'تمت إضافة المنتج إلى السلة');
     }
 
-    session()->put('cart', $cart);
-
-    if (Auth::check()) {
-        $this->syncToDatabase($cart);
-    }
-return back()->with('success', 'تم إضافة المنتج للسلة ✨');
-  //  return redirect()->route('cart.index')->with('success', 'تم إضافة المنتج للسلة ✨');
-}
-
-    // ─── تحديث الكمية (زيادة أو نقصان) ──────────────────────────────
+    // ─── update ─────────────────────────────────────────
     public function update(Request $request, $productId)
     {
         $request->validate([
             'action' => 'required|in:increase,decrease',
         ]);
 
-        $cart = session()->get('cart', []);
-$productId = (string) $productId;
+        $cart   = $this->getCart();
+        $action = $request->input('action');
+
         if (!isset($cart[$productId])) {
-            return redirect()->route('cart.index')->with('error', 'المنتج غير موجود في السلة');
+            return back()->with('error', 'المنتج غير موجود في السلة');
         }
 
-        if ($request->action === 'increase') {
+        if ($action === 'increase') {
+            $product = Product::find($productId);
+            if (!$product) {
+                unset($cart[$productId]);
+                $this->saveCart($cart);
+                return back()->with('error', 'المنتج لم يعد متاحاً');
+            }
+
+            if ($cart[$productId]['quantity'] >= ($product->stock ?? 99)) {
+                return back()->with('error', 'لا يمكن إضافة كمية أكبر من المتاح');
+            }
             $cart[$productId]['quantity']++;
-        } elseif ($request->action === 'decrease') {
-            if ($cart[$productId]['quantity'] > 1) {
-                $cart[$productId]['quantity']--;
-            } else {
-                // لو الكمية 1 وضغط ناقص، احذف المنتج
+
+        } elseif ($action === 'decrease') {
+            $cart[$productId]['quantity']--;
+            if ($cart[$productId]['quantity'] <= 0) {
                 unset($cart[$productId]);
             }
         }
 
-        session()->put('cart', $cart);
+        $this->saveCart($cart);
+        session()->forget('coupon');
 
-        if (Auth::check()) {
-            $this->syncToDatabase($cart);
-        }
-
-        return redirect()->route('cart.index');
+        return back();
     }
 
-    // ─── حذف منتج من السلة ───────────────────────────────────────────
+    // ─── remove ─────────────────────────────────────────
     public function remove($productId)
     {
-        $cart = session()->get('cart', []);
-$productId = (string) $productId;
-        if (isset($cart[$productId])) {
-            unset($cart[$productId]);
-            session()->put('cart', $cart);
+        $cart = $this->getCart();
+        unset($cart[$productId]);
+        $this->saveCart($cart);
+        session()->forget('coupon');
 
-            if (Auth::check()) {
-                $this->syncToDatabase($cart);
-            }
-        }
-
-        return redirect()->route('cart.index')->with('success', 'تم حذف المنتج من السلة');
+        return back()->with('success', 'تمت إزالة المنتج من السلة');
     }
 
-    // ─── تفريغ السلة كاملة ───────────────────────────────────────────
+    // ─── clear ──────────────────────────────────────────
     public function clear()
     {
-        session()->forget('cart');
-
         if (Auth::check()) {
             CartItem::where('user_id', Auth::id())->delete();
+        } else {
+            session()->forget('cart');
         }
-
-        return redirect()->route('cart.index')->with('success', 'تم تفريغ السلة');
-    }
-
-    // ─── مزامنة Session مع Database ──────────────────────────────────
-    private function syncToDatabase(array $cart): void
-    {
-        $userId = Auth::id();
-
-        // امسح الـ items القديمة وأعد كتابتها من الـ session
-        CartItem::where('user_id', $userId)->delete();
-
-        foreach ($cart as $productId => $details) {
-            CartItem::create([
-                'user_id'    => $userId,
-                'product_id' => $productId,
-                'quantity'   => $details['quantity'],
-                'price'      => $details['price'],
-            ]);
-        }
-    }
-
-    // ─── تحميل سلة DB في الـ Session (عند Login) ─────────────────────
-    public static function loadFromDatabase(): void
-    {
-        if (!Auth::check()) return;
-
-        $dbItems = CartItem::with('product')
-            ->where('user_id', Auth::id())
-            ->get();
-
-        if ($dbItems->isEmpty()) return;
-
-        $cart = [];
-        foreach ($dbItems as $item) {
-            $cart[$item->product_id] = [
-                'name'     => $item->product->name,
-                'price'    => $item->price,
-                'image'    => $item->product->image_url ?? $item->product->image ?? '',
-                'quantity' => $item->quantity,
-            ];
-        }
-
-        session()->put('cart', $cart);
+session()->forget('coupon');
+        return back()->with('success', 'تم تفريغ السلة');
     }
 }

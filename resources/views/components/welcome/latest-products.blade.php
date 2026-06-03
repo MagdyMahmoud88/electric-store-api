@@ -18,9 +18,9 @@
         @endphp
         <div class="reveal delay-{{ ($loop->index % 4) + 1 }} flex flex-col rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 bg-base-200 border border-base-content/10 hover:border-amber-400/30">
             <div class="h-44 relative overflow-hidden bg-base-300">
-                <img src="{{ asset('storage/' . $p->image_url) }}" alt="{{ $p->name }}"
+                <img src="{{ $p->getImageSrc() }}" alt="{{ $p->name }}" loading="lazy"
                      class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                     onerror="this.src='{{ asset('images/placeholder.png') }}'">
+                     onerror="this.onerror=null;this.src='{{ $p->getPlaceholder() }}';">
                 @if($stock > 0)
                 <span class="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border {{ $stockClass }}">
                     <span class="w-1.5 h-1.5 rounded-full {{ $stock > 10 ? 'bg-green-400' : 'bg-amber-400' }}"></span>

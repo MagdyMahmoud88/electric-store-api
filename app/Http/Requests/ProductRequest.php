@@ -26,10 +26,10 @@ class ProductRequest extends FormRequest
     'description' => 'nullable|string',
     'category_id' => 'required|exists:categories,id',
     'brand_id'    => 'nullable|exists:brands,id',
-    'main_image'  => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048', // ✅ main_image مش image_url
+    'main_image'  => 'nullable|image|mimes:jpeg,jpg,png,webp|max:2048',
     'price'       => 'required|numeric|min:0',
     'stock'       => 'required|integer|min:0',
-    'discount'    => 'nullable|numeric|min:0|max:100',
+    'discount_percentage'    => 'nullable|numeric|min:0|max:100',
 ];}
 
         public function messages(): array
@@ -49,6 +49,9 @@ class ProductRequest extends FormRequest
                 'stock.required' => 'الكمية في المخزون مطلوبة',
                 'stock.integer' => 'الكمية في المخزون يجب أن تكون عددًا صحيحًا',
                 'stock.min' => 'الكمية في المخزون لا يجب أن تكون أقل من 0',
+                'brand_id.exists'             => 'الماركة المختارة غير موجودة',
+                'discount_percentage.numeric' => 'نسبة الخصم يجب أن تكون رقمًا',
+                'discount_percentage.max'     => 'نسبة الخصم لا تتجاوز 100%',
             ];
         }
 }

@@ -159,7 +159,7 @@
                 <path stroke-linecap="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
             <span class="text-sm">
-                <a href="{{ route('login.index') }}" class="text-warning font-bold hover:underline">سجل دخول</a>
+                <a href="{{ route('login') }}" class="text-warning font-bold hover:underline">سجل دخول</a>
                 لإضافة تقييمك
             </span>
         </div>

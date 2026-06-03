@@ -293,7 +293,7 @@
                         <div class="field">
                             <label>نسبة الخصم (%)</label>
                             <div class="input-group">
-                                <input class="f-input" type="number" name="discount" id="f_discount"
+                                <input class="f-input" type="number" name="discount_percentage" id="discount_percentage"
                                        min="0" max="100" step="1" placeholder="0"
                                        value="{{ old('discount', $product->discount ?? 0) }}" />
                                 <span class="suffix">%</span>
@@ -441,7 +441,7 @@ const fields = {
     cat:      document.getElementById('f_cat'),
     desc:     document.getElementById('f_desc'),
     price:    document.getElementById('f_price'),
-    discount: document.getElementById('f_discount'),
+    discount: document.getElementById('f_discount_percentage'),
     stock:    document.getElementById('f_stock'),
 };
 const p = {

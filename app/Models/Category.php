@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 class Category extends Model
@@ -17,10 +18,18 @@ class Category extends Model
         'icon',
         'color',
         'status',
-        'products_count',
+        // ❌ products_count شيلناها — تتحسب دايماً بـ withCount() مش تتخزن يدوياً
     ];
 
-    protected static function boot()
+    protected $casts = [
+        'status' => 'string',
+    ];
+
+    // ══════════════════════════════════════════════════════════════
+    //  Boot — توليد الـ slug تلقائياً
+    // ══════════════════════════════════════════════════════════════
+
+    protected static function boot(): void
     {
         parent::boot();
 
@@ -31,9 +40,25 @@ class Category extends Model
         });
 
         static::updating(function ($category) {
-            $category->slug = Str::slug($category->name);
+            // نعيد توليد الـ slug فقط لو الـ name تغير وما فيش slug مخصوص
+            if ($category->isDirty('name') && ! $category->isDirty('slug')) {
+                $category->slug = Str::slug($category->name);
+            }
         });
     }
+
+    // ══════════════════════════════════════════════════════════════
+    //  العلاقات
+    // ══════════════════════════════════════════════════════════════
+
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    //  Scopes
+    // ══════════════════════════════════════════════════════════════
 
     public function scopeActive($query)
     {
@@ -45,14 +70,15 @@ class Category extends Model
         return $query->where('status', 'inactive');
     }
 
+    // ══════════════════════════════════════════════════════════════
+    //  Accessors
+    // ══════════════════════════════════════════════════════════════
+
+    /**
+     * للتوافق مع أي كود قديم يستخدم $category->is_active
+     */
     public function getIsActiveAttribute(): bool
     {
         return $this->status === 'active';
-    }
-
-
-    public function products()
-    {
-        return $this->hasMany(Product::class);
     }
 }

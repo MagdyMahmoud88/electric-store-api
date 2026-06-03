@@ -1,78 +1,119 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>كود التحقق - متجري</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; background: #f5f5f5; direction: rtl; }
-    .wrapper { max-width: 560px; margin: 30px auto; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
-    .header { background: linear-gradient(135deg, #f97316, #f59e0b); padding: 40px 32px; text-align: center; }
-    .header .logo { display: inline-flex; align-items: center; gap: 10px; }
-    .header .logo-icon { width: 52px; height: 52px; background: rgba(255,255,255,0.2); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 28px; }
-    .header h1 { color: #fff; font-size: 22px; font-weight: 700; margin-top: 14px; }
-    .header p { color: rgba(255,255,255,0.85); font-size: 13px; margin-top: 4px; }
-    .body { padding: 36px 32px; }
-    .greeting { font-size: 16px; color: #374151; margin-bottom: 16px; }
-    .desc { font-size: 14px; color: #6b7280; line-height: 1.7; margin-bottom: 28px; }
-    .otp-box { background: #fff7ed; border: 2px dashed #f97316; border-radius: 14px; padding: 24px; text-align: center; margin-bottom: 28px; }
-    .otp-label { font-size: 13px; color: #9a3412; font-weight: 600; margin-bottom: 10px; }
-    .otp-code { font-size: 42px; font-weight: 900; letter-spacing: 10px; color: #ea580c; font-family: 'Courier New', monospace; }
-    .otp-expires { font-size: 12px; color: #9a3412; margin-top: 10px; }
-    .warning { background: #fef3c7; border-right: 4px solid #f59e0b; padding: 14px 16px; border-radius: 8px; font-size: 13px; color: #92400e; margin-bottom: 24px; line-height: 1.6; }
-    .divider { border: none; border-top: 1px solid #f3f4f6; margin: 24px 0; }
-    .footer { padding: 20px 32px 28px; text-align: center; background: #fafafa; border-top: 1px solid #f3f4f6; }
-    .footer p { font-size: 12px; color: #9ca3af; line-height: 1.8; }
-    .footer .brand { color: #f97316; font-weight: 700; }
-  </style>
-</head>
-<body>
-<div class="wrapper">
+<x-auth-layout title="أدخل كود التحقق">
 
-  <!-- Header -->
-  <div class="header">
-    <div class="logo">
-      <div class="logo-icon">⚡</div>
+    <div class="auth-card">
+
+        {{-- Header --}}
+        <div style="text-align:center;margin-bottom:24px;">
+            <div class="auth-badge">
+                <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                </svg>
+                التحقق من البريد
+            </div>
+            <h1 style="font-size:20px;font-weight:800;color:var(--text);margin:0 0 6px;">أدخل كود التحقق</h1>
+            <p style="font-size:13px;color:var(--text-muted);margin:0;">
+                تم إرسال كود مكوّن من 6 أرقام إلى
+                <span style="color:var(--electric);font-weight:700;">{{ $email }}</span>
+            </p>
+        </div>
+
+        {{-- Errors --}}
+        @if($errors->any())
+            <div class="auth-alert auth-alert-error" style="margin-bottom:20px;">
+                <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="flex-shrink:0;">
+                    <path stroke-linecap="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <ul style="margin:0;padding:0;list-style:none;">
+                    @foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach
+                </ul>
+            </div>
+        @endif
+
+        <form action="{{ route('verification.verify') }}" method="POST" id="otpForm">
+            @csrf
+
+            {{-- OTP Inputs --}}
+            <div class="otp-grid" style="margin-bottom:24px;">
+                @for($i = 0; $i < 6; $i++)
+                    <input
+                        type="text"
+                        maxlength="1"
+                        inputmode="numeric"
+                        pattern="[0-9]"
+                        class="otp-input"
+                        id="otp_{{ $i }}"
+                        autocomplete="off"
+                    >
+                @endfor
+            </div>
+
+            {{-- Hidden field --}}
+            <input type="hidden" name="otp" id="otpHidden">
+
+            <button type="submit" class="auth-btn" style="margin-bottom:16px;">
+                <svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                </svg>
+                تحقق من الكود
+            </button>
+        </form>
+
+        {{-- Resend --}}
+        <div style="text-align:center;">
+            <span style="font-size:13px;color:var(--text-muted);">ما وصلكش الكود؟ </span>
+            <form action="{{ route('verification.resend') }}" method="POST" style="display:inline;">
+                @csrf
+                <button type="submit" style="background:none;border:none;cursor:pointer;font-size:13px;font-weight:700;color:var(--electric);font-family:'Cairo',sans-serif;padding:0;">
+                    أعد الإرسال
+                </button>
+            </form>
+        </div>
+
     </div>
-    <h1>متجري للأدوات الكهربائية</h1>
-    <p>تحقق من بريدك الإلكتروني</p>
-  </div>
 
-  <!-- Body -->
-  <div class="body">
-    <p class="greeting">مرحباً،</p>
-    <p class="desc">
-      استلمنا طلب للتحقق من بريدك الإلكتروني <strong>{{ $email }}</strong>.
-      استخدم الكود التالي لإتمام عملية التحقق:
-    </p>
+</x-auth-layout>
 
-    <!-- OTP Code -->
-    <div class="otp-box">
-      <p class="otp-label">🔐 كود التحقق الخاص بيك</p>
-      <div class="otp-code">{{ $otp }}</div>
-      <p class="otp-expires">⏱ صالح لمدة 10 دقائق فقط</p>
-    </div>
+<script>
+    // ── OTP inputs navigation ──────────────────────────────────
+    const inputs = Array.from({length: 6}, (_, i) => document.getElementById(`otp_${i}`));
 
-    <!-- Warning -->
-    <div class="warning">
-      ⚠️ <strong>مهم:</strong> لو أنت مش طلبت الكود ده، تجاهل الإيميل ده وبلّغنا فوراً.
-      متشاركش الكود مع أي حد.
-    </div>
+    inputs.forEach((input, idx) => {
+        input.addEventListener('input', (e) => {
+            const val = e.target.value.replace(/\D/g, '');
+            e.target.value = val;
+            if (val && idx < 5) inputs[idx + 1].focus();
+            updateHidden();
+        });
 
-    <hr class="divider">
-    <p style="font-size:13px; color:#6b7280; line-height:1.7;">
-      لو عندك أي مشكلة، تواصل معنا على
-      <a href="mailto:support@matgari.com" style="color:#f97316;">support@matgari.com</a>
-    </p>
-  </div>
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace' && !input.value && idx > 0) {
+                inputs[idx - 1].focus();
+            }
+        });
 
-  <!-- Footer -->
-  <div class="footer">
-    <p>© {{ date('Y') }} <span class="brand">متجري</span> للأدوات الكهربائية. جميع الحقوق محفوظة.</p>
-    <p>الإيميل ده اتبعت تلقائياً، متردش عليه.</p>
-  </div>
+        input.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+            text.split('').slice(0, 6).forEach((char, i) => {
+                if (inputs[i]) inputs[i].value = char;
+            });
+            inputs[Math.min(text.length, 5)].focus();
+            updateHidden();
+        });
+    });
 
-</div>
-</body>
-</html>
+    function updateHidden() {
+        document.getElementById('otpHidden').value = inputs.map(i => i.value).join('');
+    }
+
+    // ── Auto-submit لو اكتملت الـ 6 أرقام ──────────────────────
+    inputs[5].addEventListener('input', () => {
+        if (inputs.every(i => i.value)) {
+            updateHidden();
+            document.getElementById('otpForm').submit();
+        }
+    });
+
+    // Focus أول input
+    inputs[0].focus();
+</script>

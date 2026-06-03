@@ -1,43 +1,31 @@
 <x-layout>
-    <div class="admin-page max-w-5xl mx-auto py-10 px-4 mb-20">
+    <div class="admin-page max-w-5xl mx-auto py-10 px-4 pb-32">
 
-        {{-- Header Section --}}
+        {{-- Header --}}
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
             <div class="flex items-center gap-4">
-                <a href="{{ route('admin.brands.index') }}" class="btn btn-square btn-outline border-base-content/20 hover:border-amber-500 hover:text-amber-500 transition-all duration-300">
+                <a href="{{ route('admin.brands.index') }}"
+                   class="btn btn-square btn-outline border-base-content/20 hover:border-amber-500 hover:text-amber-500 transition-all duration-300">
                     <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
                     </svg>
                 </a>
                 <div>
-                    <h1 class="text-2xl font-black tracking-tight">
-                        {{ isset($brand) ? 'تعديل بيانات الماركة' : 'إضافة ماركة جديدة' }}
-                    </h1>
+                    <h1 class="text-2xl font-black tracking-tight">إضافة ماركة جديدة</h1>
                     <p class="text-xs text-base-content/50 font-bold uppercase mt-1">لوحة تحكم فولت الكهربائية</p>
                 </div>
             </div>
-
-            @if(isset($brand) && $brand->is_active)
-                <div class="badge badge-success badge-outline gap-2 py-3 px-4 font-bold">
-                    <span class="relative flex h-2 w-2">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
-                    </span>
-                    نشط حالياً
-                </div>
-            @endif
         </div>
 
-        <form method="POST" action="{{ isset($brand) ? route('admin.brands.update', $brand) : route('admin.brands.store') }}" enctype="multipart/form-data" class="space-y-6">
+        <form method="POST" action="{{ route('admin.brands.store') }}" enctype="multipart/form-data" class="space-y-6">
             @csrf
-            @if(isset($brand)) @method('PUT') @endif
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                {{-- Column 1 & 2: Main Content --}}
+                {{-- ── Column 1 & 2: Main Content ── --}}
                 <div class="lg:col-span-2 space-y-6">
 
-                    {{-- Basic Info Card --}}
+                    {{-- البيانات الأساسية --}}
                     <div class="card bg-base-200 border border-base-content/10 shadow-xl">
                         <div class="card-body p-6">
                             <div class="flex items-center gap-2 mb-4 text-amber-500">
@@ -48,24 +36,31 @@
                             </div>
 
                             <div class="form-control w-full">
-                                <label class="label font-bold text-xs text-base-content/70">اسم الماركة التجارية <span class="text-error">*</span></label>
+                                <label class="label font-bold text-xs text-base-content/70">
+                                    اسم الماركة التجارية <span class="text-error">*</span>
+                                </label>
                                 <input type="text" name="name" id="brand_name"
-                                       placeholder="مثال: آبل، فولت، تويوتا..."
+                                       placeholder="مثال: آبل، سامسونج، تويوتا..."
                                        class="input input-bordered focus:input-primary bg-base-300 w-full font-bold"
-                                       value="{{ old('name', $brand->name ?? '') }}" required />
-                                @error('name') <label class="label"><span class="label-text-alt text-error font-bold">{{ $message }}</span></label> @enderror
+                                       value="{{ old('name') }}" required />
+                                @error('name')
+                                <label class="label"><span class="label-text-alt text-error font-bold">{{ $message }}</span></label>
+                                @enderror
                             </div>
 
                             <div class="form-control w-full mt-4">
                                 <label class="label font-bold text-xs text-base-content/70">الوصف التفصيلي</label>
                                 <textarea name="description" rows="4"
                                           placeholder="نبذة مختصرة عن تخصص الماركة..."
-                                          class="textarea textarea-bordered focus:textarea-primary bg-base-300 font-bold leading-relaxed">{{ old('description', $brand->description ?? '') }}</textarea>
+                                          class="textarea textarea-bordered focus:textarea-primary bg-base-300 font-bold leading-relaxed">{{ old('description') }}</textarea>
+                                @error('description')
+                                <label class="label"><span class="label-text-alt text-error font-bold">{{ $message }}</span></label>
+                                @enderror
                             </div>
                         </div>
                     </div>
 
-                    {{-- Visual Identity Card --}}
+                    {{-- الهوية البصرية --}}
                     <div class="card bg-base-200 border border-base-content/10 shadow-xl">
                         <div class="card-body p-6">
                             <div class="flex items-center gap-2 mb-4 text-amber-500">
@@ -76,12 +71,9 @@
                             </div>
 
                             <div class="flex flex-col md:flex-row gap-6 items-start">
-                                <div id="logo-preview" class="w-32 h-32 rounded-2xl bg-base-300 border border-dashed border-base-content/20 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-inner">
-                                    @if(isset($brand) && $brand->logo)
-                                        <img src="{{ asset('storage/' . $brand->logo) }}" class="w-full h-full object-contain p-4 shadow-sm">
-                                    @else
-                                        <span class="text-4xl opacity-20">🖼️</span>
-                                    @endif
+                                <div id="logo-preview"
+                                     class="w-32 h-32 rounded-2xl bg-base-300 border border-dashed border-base-content/20 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-inner">
+                                    <span class="text-4xl opacity-20">🖼️</span>
                                 </div>
 
                                 <div class="flex-grow w-full">
@@ -91,17 +83,63 @@
                                             <p class="mt-2 text-sm font-bold">اسحب اللوجو هنا أو اضغط للرفع</p>
                                             <p class="text-xs opacity-50 font-bold mt-1 uppercase">PNG, SVG, WEBP (Max 2MB)</p>
                                         </div>
-                                        <input type="file" name="logo" id="logo-input" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" />
+                                        <input type="file" name="logo" id="logo-input" accept="image/*"
+                                               class="absolute inset-0 opacity-0 cursor-pointer" />
                                     </label>
-                                    @error('logo') <p class="text-error text-xs font-bold mt-2">{{ $message }}</p> @enderror
+                                    @error('logo')
+                                    <p class="text-error text-xs font-bold mt-2">{{ $message }}</p>
+                                    @enderror
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    {{-- خصم الماركة --}}
+                    <div class="card bg-base-200 border border-base-content/10 shadow-xl">
+                        <div class="card-body p-6">
+                            <div class="flex items-center gap-2 mb-4 text-amber-500">
+                                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                                </svg>
+                                <h2 class="card-title text-sm font-bold">خصم الماركة</h2>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                                <div class="form-control w-full">
+                                    <label class="label font-bold text-xs text-base-content/70">
+                                        نسبة الخصم % على جميع المنتجات
+                                    </label>
+                                    <input type="number" name="discount_percentage" min="0" max="100" step="0.01"
+                                           class="input input-bordered focus:input-warning bg-base-300 w-full font-bold"
+                                           value="{{ old('discount_percentage', 0) }}"
+                                           placeholder="0 = بدون خصم" />
+                                    @error('discount_percentage')
+                                    <label class="label"><span class="label-text-alt text-error font-bold">{{ $message }}</span></label>
+                                    @enderror
+                                </div>
+
+                                <div class="form-control w-full">
+                                    <label class="label font-bold text-xs text-base-content/70">
+                                        تاريخ انتهاء الخصم (اختياري)
+                                    </label>
+                                    <input type="datetime-local" name="discount_expires_at"
+                                           class="input input-bordered focus:input-warning bg-base-300 w-full font-bold"
+                                           value="{{ old('discount_expires_at') }}" />
+                                    @error('discount_expires_at')
+                                    <label class="label"><span class="label-text-alt text-error font-bold">{{ $message }}</span></label>
+                                    @enderror
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
-                {{-- Column 3: Sidebar Settings --}}
+                {{-- ── Column 3: Sidebar ── --}}
                 <div class="space-y-6">
+
                     <div class="card bg-base-200 border border-base-content/10 shadow-xl">
                         <div class="card-body p-6">
                             <h2 class="font-bold text-xs uppercase opacity-50 mb-4 tracking-widest text-center">الإعدادات الفنية</h2>
@@ -109,16 +147,18 @@
                             <div class="form-control w-full">
                                 <label class="label font-bold text-xs">رابط الـ Slug</label>
                                 <input type="text" name="slug" id="brand_slug" dir="ltr"
-                                       class="input input-bordered input-sm bg-base-300 font-mono text-xs"
-                                       value="{{ old('slug', $brand->slug ?? '') }}" />
-                                <label class="label"><span class="label-text-alt opacity-50 font-bold">يتولد تلقائياً من الاسم</span></label>
+                                       class="input input-bordered input-sm bg-base-300 font-mono text-xs focus:input-primary"
+                                       value="{{ old('slug') }}" />
+                                <label class="label">
+                                    <span class="label-text-alt opacity-50 font-bold">يتولد تلقائياً من الاسم</span>
+                                </label>
                             </div>
 
                             <div class="form-control w-full mt-2">
                                 <label class="label font-bold text-xs">ترتيب الظهور</label>
                                 <input type="number" name="sort_order"
-                                       class="input input-bordered input-sm bg-base-300 font-bold"
-                                       value="{{ old('sort_order', $brand->sort_order ?? 0) }}" />
+                                       class="input input-bordered input-sm bg-base-300 font-bold focus:input-primary"
+                                       value="{{ old('sort_order', 0) }}" />
                             </div>
 
                             <div class="divider opacity-5"></div>
@@ -128,61 +168,74 @@
                                     <span class="block font-bold text-sm">تفعيل الماركة</span>
                                     <span class="text-[10px] opacity-50 uppercase font-black">Active Status</span>
                                 </div>
-                                <input type="checkbox" name="is_active" value="1" class="toggle toggle-primary" {{ old('is_active', $brand->is_active ?? true) ? 'checked' : '' }} />
+                                <input type="checkbox" name="is_active" value="1"
+                                       class="toggle toggle-primary"
+                                    {{ old('is_active', true) ? 'checked' : '' }} />
                             </div>
+
                         </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            {{-- Sticky Action Bar --}}
+            <div class="fixed bottom-0 left-0 right-0 z-50">
+                <div class="bg-base-200/90 backdrop-blur-md border-t border-base-content/10 px-4 py-4 md:px-8">
+                    <div class="max-w-5xl mx-auto flex flex-col-reverse md:flex-row gap-3 items-center justify-end">
+
+                        <a href="{{ route('admin.brands.index') }}"
+                           class="btn btn-ghost btn-sm md:btn-md font-bold w-full md:w-auto hover:bg-error/10 hover:text-error transition-all">
+                            إلغاء العملية
+                        </a>
+
+                        <button type="submit"
+                                class="btn btn-primary md:px-12 gap-3 shadow-lg shadow-primary/20 w-full md:w-auto group transform transition hover:scale-[1.02] active:scale-95">
+                            <span class="font-black text-base">إتمام إضافة الماركة</span>
+                            <div class="bg-primary-content/20 p-1 rounded-md group-hover:bg-primary-content/30 transition-colors">
+                                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                </svg>
+                            </div>
+                        </button>
+
                     </div>
                 </div>
             </div>
 
-            {{-- Sticky Action Bar --}}
-           <div class="sticky bottom-0 left-0 right-0 z-50 mt-10">
-    <div class="bg-base-200/80 backdrop-blur-md border-t border-base-content/10 px-4 py-4 md:px-8">
-        <div class="max-w-5xl mx-auto flex flex-col-reverse md:flex-row gap-3 items-center justify-end">
-
-            <a href="{{ route('admin.brands.index') }}"
-               class="btn btn-ghost btn-sm md:btn-md font-bold w-full md:w-auto">
-                إلغاء العملية
-            </a>
-
-            <button type="submit"
-                    class="btn btn-primary md:px-12 gap-3 shadow-lg shadow-primary/20 w-full md:w-auto group transform transition hover:scale-[1.02] active:scale-95">
-                <span class="font-black text-base">
-                    {{ isset($brand) ? 'حفظ التعديلات' : 'إتمام إضافة الماركة' }}
-                </span>
-                <div class="bg-primary-content/20 p-1 rounded-md group-hover:bg-primary-content/30 transition-colors">
-                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                    </svg>
-                </div>
-            </button>
-
-        </div>
+        </form>
     </div>
-</div>
 
     <script>
-        // معاينة الصورة
-        document.getElementById('logo-input').addEventListener('change', function(e) {
+        // معاينة الصورة قبل الرفع
+        document.getElementById('logo-input').addEventListener('change', function (e) {
             const preview = document.getElementById('logo-preview');
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     preview.innerHTML = `<img src="${event.target.result}" class="w-full h-full object-contain p-4 animate-in fade-in zoom-in duration-300">`;
-                }
+                };
                 reader.readAsDataURL(file);
             }
         });
 
-        // توليد الـ Slug
-        document.getElementById('brand_name').addEventListener('input', function() {
+        // توليد الـ Slug تلقائياً من الاسم
+        document.getElementById('brand_name').addEventListener('input', function () {
             const slugInput = document.getElementById('brand_slug');
-            if(slugInput.value === "" || slugInput.dataset.auto === "true") {
+            if (slugInput.value === '' || slugInput.dataset.auto === 'true') {
                 slugInput.value = this.value.toLowerCase().trim()
-                    .replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');
-                slugInput.dataset.auto = "true";
+                    .replace(/[^\w\s-]/g, '')
+                    .replace(/[\s_-]+/g, '-')
+                    .replace(/^-+|-+$/g, '');
+                slugInput.dataset.auto = 'true';
             }
+        });
+
+        // لو المستخدم عدّل الـ slug يدوياً، وقف التوليد التلقائي
+        document.getElementById('brand_slug').addEventListener('input', function () {
+            this.dataset.auto = 'false';
         });
     </script>
 </x-layout>

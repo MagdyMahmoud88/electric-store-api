@@ -9,28 +9,55 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('orders', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->decimal('total', 10, 2)->default(0);
-            $table->enum('status', ['pending', 'processing', 'shipped', 'delivered', 'cancelled'])->default('pending');
-            $table->text('notes')->nullable();
-            $table->timestamps();
-        });
-
-        Schema::create('order_items', function (Blueprint $table) {
             $table->id();
-            $table->uuid('order_id');
-            $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
-            $table->foreignId('product_id')->constrained()->onDelete('cascade');
-            $table->unsignedInteger('quantity');
-            $table->decimal('price', 10, 2);
+
+            $table->foreignId('user_id')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
+            $table->string('order_number', 30)->unique();
+            $table->string('idempotency_key', 64)->nullable()->unique();
+
+            $table->enum('payment_method', [
+                'cod', 'kashier', 'card', 'vodafone', 'instapay',
+            ])->default('cod');
+
+            $table->foreignId('coupon_id')
+                ->nullable()
+                ->constrained('coupons')
+                ->nullOnDelete();
+
+            $table->string('coupon_code', 50)->nullable();
+            $table->decimal('discount', 10, 2)->default(0);
+            $table->decimal('subtotal', 10, 2);
+            $table->decimal('tax',      10, 2)->default(0);
+            $table->decimal('shipping', 10, 2)->default(0);
+            $table->decimal('total',    10, 2);
+
+            $table->enum('status', [
+                'pending', 'processing', 'shipped',
+                'delivered', 'cancelled', 'payment_failed',
+            ])->default('pending');
+
+            $table->enum('payment_status', [
+                'unpaid', 'paid', 'failed', 'refunded',
+            ])->default('unpaid');
+
+            $table->timestamp('paid_at')->nullable();
+            $table->text('notes')->nullable();
+
             $table->timestamps();
+            $table->softDeletes();
+
+            $table->index(['user_id', 'created_at']);
+            $table->index('status');
+            $table->index('payment_status');
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('order_items');
         Schema::dropIfExists('orders');
     }
 };

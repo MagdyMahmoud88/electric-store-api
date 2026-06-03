@@ -21,6 +21,8 @@ class ProductViewController extends Controller
     $products = Product::with(['category', 'brand'])
         ->whereHas('category', fn($q) => $q->where('status', 'active'))
         ->whereHas('brand', fn($q) => $q->where('is_active', true))
+        ->when(!auth()->user()?->isAdmin(), fn($q) => $q->where('stock', '>', 0))
+
         ->when($request->category, fn($q) => $q->where('category_id', $request->category))
         ->when($request->brand,    fn($q) => $q->where('brand_id', $request->brand))
         ->when($request->search, fn($q) => $q->where(function ($q2) use ($request) {
@@ -41,13 +43,15 @@ class ProductViewController extends Controller
         ->withQueryString();
 
     $categories = Category::where('status', 'active')
-    ->withCount(['products' => fn($q) => $q
-        ->whereHas('brand', fn($q2) => $q2->where('is_active', true)) // لا تحسب منتجات الماركات المخفية
-    ])
-    ->get();
+        ->withCount(['products' => fn($q) => $q
+            ->where('stock', '>', 0)
+            ->whereHas('brand', fn($b) => $b->where('is_active', true))
+        ])
+        ->get();;
 
    $brands = Brand::where('is_active', true)
     ->withCount(['products' => fn($q) => $q
+        ->where('stock', '>', 0)
         ->whereHas('category', fn($q2) => $q2->where('status', 'active')) // لا تحسب منتجات الأقسام المخفية
     ])
     ->orderBy('sort_order')
@@ -69,18 +73,23 @@ class ProductViewController extends Controller
     public function welcome()
     {
         $categories = Category::where('status', 'active')
-            ->withCount('products')
+            ->withCount(['products' => fn($q) => $q
+                ->where('stock', '>', 0)
+                ->whereHas('brand', fn($b) => $b->where('is_active', true))
+            ])
             ->get();
 
         $latestProducts = Product::with(['category', 'brand'])
             ->whereHas('category', fn($q) => $q->where('status', 'active'))
+            ->when(!auth()->user()?->isAdmin(), fn($q) => $q->where('stock', '>', 0)) // ✅
             ->latest()
             ->take(8)
             ->get();
 
         $discountedProducts = Product::with(['category', 'brand'])
             ->whereHas('category', fn($q) => $q->where('status', 'active'))
-            ->where('discount', '>', 0)
+            ->where('discount_percentage', '>', 0)
+            ->when(!auth()->user()?->isAdmin(), fn($q) => $q->where('stock', '>', 0)) // ✅
             ->latest()
             ->take(8)
             ->get();

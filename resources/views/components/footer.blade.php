@@ -62,7 +62,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('login.index') }}" class="text-sm text-base-content/50 hover:text-warning transition-colors no-underline">
+                        <a href="{{ route('login') }}" class="text-sm text-base-content/50 hover:text-warning transition-colors no-underline">
                             تسجيل الدخول
                         </a>
                     </li>
