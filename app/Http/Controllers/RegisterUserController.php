@@ -4,69 +4,34 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreUserRequest;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class RegisterUserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function create()
     {
         return view('auth.register');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreUserRequest $request)
     {
-      $user = User::create($request->validated());
+        // ── 1. إنشاء الحساب ───────────────────────────────────
+        $user = User::create($request->validated());
+
+        // ── 2. تسجيل الدخول ──────────────────────────────────
         Auth::login($user);
-return redirect()->route('verification.email')
-    ->with('info', 'تم التسجيل بنجاح! 🎉 برجاء تفعيل بريدك الإلكتروني للمتابعة.');
 
+        // ── 3. حفظ الإيميل في الـ session ────────────────────
+        // ✅ عشان صفحة الـ OTP تعرف على أي إيميل تبعت الكود
+        $request->session()->put('verify_email', $user->email);
 
-    }
+        // ── 4. بعت الكود تلقائياً ────────────────────────────
+        // ✅ بدل ما المستخدم يضغط "إرسال الكود" يدوياً
+        app(EmailVerificationController::class)->sendOtp(
+            $request->merge(['email' => $user->email])
+        );
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return redirect()->route('verification.otp.form')
+            ->with('success', 'تم التسجيل بنجاح! 🎉 تحقق من بريدك الإلكتروني وأدخل الكود.');
     }
 }

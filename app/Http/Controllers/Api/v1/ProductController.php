@@ -17,7 +17,7 @@ class ProductController extends Controller
     {
 
         //  $products = Product::with('category')->latest()->paginate(4);
-        $query = Product::with('category');
+        $query = Product::with(['category', 'brand', 'approvedReviews']);
 
 
 
@@ -37,10 +37,9 @@ class ProductController extends Controller
             $query->orderBy('price', 'asc');
         } elseif ($request->sort == 'price_desc') {
             $query->orderBy('price', 'desc');
-        } else {
-            // الافتراضي: الأحدث أولاً
-            // $query->latest();
         }
+        // الافتراضي: الأحدث أولاً
+        // $query->latest();
         // 4. جلب البيانات النهائية
         $products = $query->paginate(10);
         return ProductResource::collection($products);
@@ -73,9 +72,7 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-
-
-        return new ProductResource($product);
+        return new ProductResource($product->load(['category', 'brand', 'approvedReviews']));
     }
 
     /**

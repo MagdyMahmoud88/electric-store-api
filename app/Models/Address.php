@@ -8,12 +8,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Address extends Model
 {
     protected $fillable = [
-        'user_id',
-        'street',
-        'city',
-        'state',
-        'postal_code',
-        'country',
+    'first_name',
+    'last_name',
+    'phone',
+    'street_address',
+    'area',
+    'building_number',
+    'city',
+    'governorate',
+    'is_default',
+    'user_id',
     ];
     public function user ():BelongsTo
     {

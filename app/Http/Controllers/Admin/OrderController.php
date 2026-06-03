@@ -9,7 +9,7 @@ class OrderController extends Controller
 {
     public function index(Request $request)
     {
-        $orders = Order::with(['user', 'orderItems.product'])
+        $orders = Order::with(['user', 'items.product'])
             ->when($request->status, fn($q) => $q->where('status', $request->status))
             ->when($request->search, fn($q) => $q->whereHas('user', fn($u) =>
                 $u->where('name', 'like', "%{$request->search}%")
@@ -27,7 +27,7 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        $order->load(['user', 'orderItems.product']);
+        $order->load(['user', 'items.product']);
         return view('admin.orders.show', compact('order'));
     }
 

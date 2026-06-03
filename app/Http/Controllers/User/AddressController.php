@@ -2,8 +2,9 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AddressesRequest;
 use App\Models\Address;
-use Illuminate\Http\Request;
+use App\Services\ActivityLogger;
 use Illuminate\Support\Facades\Auth;
 
 class AddressController extends Controller
@@ -16,25 +17,48 @@ class AddressController extends Controller
     }
 
     // حفظ عنوان جديد
-    public function store(Request $request)
+    public function store(AddressesRequest $request)
     {
-        $validated = $request->validate([
-            'full_name'      => 'required|string|max:255',
-            'phone'          => 'required|string|max:20',
-            'city'           => 'required|string',
-            'area'           => 'required|string',
-            'street_address' => 'required|string',
-            'building_number'=> 'nullable|string',
-            'is_default'     => 'boolean',
-        ]);
+        $validated = $request->validated();
 
         // إذا اختار المستخدم هذا العنوان كـ "افتراضي"، يجب إلغاء الافتراضي عن الباقي
         if ($request->has('is_default')) {
             Auth::user()->addresses()->update(['is_default' => false]);
         }
 
-        Auth::user()->addresses()->create($validated);
+        $address = Auth::user()->addresses()->create($validated);
+        ActivityLogger::addressAdded(Auth::user(), $address);
 
         return redirect()->route('profile.index')->with('success', 'تم إضافة العنوان بنجاح');
     }
+
+public function update(AddressesRequest $request, Address $address)
+{
+    if ($address->user_id !== Auth::id()) abort(403);
+
+    $validated = $request->validated();
+
+    if ($request->has('is_default')) {
+        Auth::user()->addresses()->update(['is_default' => false]);
+    }
+
+    $address->update($validated);
+    return back()->with('success', 'تم تحديث العنوان');
+}
+
+public function destroy(Address $address)
+{
+    if ($address->user_id !== Auth::id()) abort(403);
+    $address->delete();
+    return back()->with('success', 'تم حذف العنوان');
+}
+
+public function setDefault(Address $address)
+{
+    if ($address->user_id !== Auth::id()) abort(403);
+    Auth::user()->addresses()->update(['is_default' => false]);
+    $address->update(['is_default' => true]);
+    return back()->with('success', 'تم تعيين العنوان الافتراضي');
+}
+
 }

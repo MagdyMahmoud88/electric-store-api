@@ -35,7 +35,11 @@ class BrandRequest extends FormRequest
             'description' => ['nullable', 'string', 'max:500'],
             'is_active'   => ['boolean'],
             'sort_order'  => ['integer', 'min:0'],
+            'discount_percentage' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'discount_expires_at' => ['nullable', 'date', 'after:now'],
+
         ];
+
     }
 
     public function messages(): array
@@ -47,6 +51,11 @@ class BrandRequest extends FormRequest
             'slug.unique'   => 'هذا الـ slug مستخدم بالفعل',
             'logo.image'    => 'يجب أن يكون اللوجو صورة',
             'logo.max'      => 'حجم اللوجو لا يتجاوز 2MB',
+            'discount_percentage.numeric'           => 'نسبة الخصم يجب أن تكون رقماً',
+            'discount_percentage.min'               => 'نسبة الخصم لا تقل عن 0',
+            'discount_percentage.max'               => 'نسبة الخصم لا تتجاوز 100%',
+            'discount_expires_at.date'   => 'تاريخ انتهاء الخصم غير صحيح',
+            'discount_expires_at.after'  => 'تاريخ انتهاء الخصم يجب أن يكون في المستقبل',
         ];
     }
 }

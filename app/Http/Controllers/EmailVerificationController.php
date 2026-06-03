@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Mail\VerifyEmailOtpMail;
 use App\Models\EmailVerificationOtp;
 use App\Models\User;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -42,12 +43,7 @@ class EmailVerificationController extends Controller
         ]);
     }
 
-    // ─── إرسال الكود ──────────────────────────────────────────
 
-    /**
-     * إرسال OTP للإيميل
-     * يُستخدم عند التسجيل أو الطلب اليدوي
-     */
     public function sendOtp(Request $request)
     {
         $request->validate([
@@ -69,13 +65,12 @@ class EmailVerificationController extends Controller
         // حذف الكودات القديمة لنفس الإيميل
         EmailVerificationOtp::where('email', $email)->delete();
 
-        // توليد كود عشوائي آمن
         $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
         // حفظ الكود في الداتابيز
         EmailVerificationOtp::create([
             'email'      => $email,
-            'otp'        => bcrypt($otp), // تشفير الكود
+            'otp'        => $otp,
             'expires_at' => now()->addMinutes(self::OTP_EXPIRES_MINUTES),
         ]);
 
@@ -113,7 +108,6 @@ class EmailVerificationController extends Controller
             ]);
         }
 
-        // جلب آخر كود صالح
         $record = EmailVerificationOtp::valid($email)->latest()->first();
 
         if (!$record) {
@@ -121,12 +115,11 @@ class EmailVerificationController extends Controller
         }
 
         // مطابقة الكود
-        if (!password_verify($request->otp, $record->otp)) {
+        if ($record->otp !== $request->otp) {
             RateLimiter::hit($rateLimitKey, 15 * 60);
             return back()->withErrors(['otp' => 'الكود غلط، حاول تاني.']);
         }
 
-        // ✅ تم التحقق — تحديث الداتابيز
         RateLimiter::clear($rateLimitKey);
         $record->update(['used' => true]);
 
@@ -135,11 +128,12 @@ class EmailVerificationController extends Controller
         if ($user) {
             $user->update(['email_verified_at' => now()]);
             Auth::login($user);
+            ActivityLogger::emailVerified($user);
         }
 
         $request->session()->forget('verify_email');
 
-        return redirect()->route('products.index')
+        return redirect()->intended('products.index')
             ->with('success', 'تم التحقق من بريدك الإلكتروني بنجاح! 🎉');
     }
 

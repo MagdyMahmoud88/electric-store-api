@@ -4,6 +4,7 @@
 @import "./layout/navbar.css";
 @import "./layout/footer.css";
 @import "./pages/welcome.css";
+@import "./admin.css";
 @plugin "daisyui" {
   themes: light --default, dark, cupcake, cyberpunk, forest, luxury;
 }

@@ -1,5 +1,6 @@
 <?php
 namespace App\Http\Controllers\User;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProfileRequest;
@@ -22,8 +23,8 @@ class ProfileController extends Controller
             'name'  => 'required|string|max:100',
 
         ]);
-dd($request->all());
-        $user->update($request->only('name', 'email'));
+        $user->update($request->only('name'));
+        ActivityLogger::profileUpdated($user, $request->only('name'));
 
         return back()->with('success', 'تم تحديث البيانات بنجاح');
     }
@@ -42,7 +43,15 @@ dd($request->all());
         }
 
         $user->update(['password' => Hash::make($request->password)]);
-
+        ActivityLogger::passwordChanged($user);
         return back()->with('success_password', 'تم تغيير كلمة المرور بنجاح');
     }
+
+    public function reviews()
+{
+    // جلب تقييمات المستخدم الحالي مع بيانات المنتج المرتبط بالتقييم
+    $reviews = Auth::user()->reviews()->with('product')->latest()->paginate(10);
+
+    return view('user.profile.reviews', compact('reviews'));
+}
 }

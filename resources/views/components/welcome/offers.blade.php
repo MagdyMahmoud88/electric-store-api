@@ -15,8 +15,10 @@
                  style="scroll-snap-align:start;">
                 {{-- صورة المنتج --}}
                 <div class="h-48 flex items-center justify-center relative overflow-hidden bg-base-300">
-                    <img src="{{ asset('storage/' . $p->image_url) }}" alt="{{ $p->name }}"
-                         class="w-4/5 h-11/12 object-cover" onerror="this.style.display='none'">
+                    <img src="{{ $p->getImageSrc() }}"
+                         alt="{{ $p->name }}" loading="lazy"
+                         class="w-4/5 h-11/12 object-cover"
+                         onerror="this.onerror=null;this.src='{{ $p->getPlaceholder() }}';">
                     @if($disc > 0)
                     <span class="absolute top-2.5 right-2.5 badge badge-error text-white text-[11px] font-black px-2">
                         خصم {{ $disc }}%

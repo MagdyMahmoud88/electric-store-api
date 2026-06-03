@@ -9,8 +9,11 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^8.2",
+        "php": "^8.5",
+        "ar-php/ar-php": "^1.0",
+        "barryvdh/laravel-dompdf": "^3.1",
         "intervention/image": "^4.0",
+        "khaled.alshamaa/ar-php": "^7.0",
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
@@ -91,7 +94,7 @@
         },
         "audit": {
 
-            "block-insecure": false
+            "block-insecure": true
         }
     },
     "minimum-stability": "stable",

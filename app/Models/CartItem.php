@@ -14,7 +14,8 @@ public $fillable = [
     'user_id',
     'product_id',
     'quantity',
-    'price',
+    'variant',
+
 ];
 
 public function user():BelongsTo

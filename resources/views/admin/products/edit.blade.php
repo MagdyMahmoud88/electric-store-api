@@ -172,13 +172,13 @@
                                        style="background:var(--surface2);border-color:var(--border);color:var(--text);">
                                     <span class="text-xs font-black shrink-0" style="color:var(--text-muted);">%</span>
                                     <input type="number"
-                                           name="discount"
-                                           id="f_discount"
+                                           name="discount_percentage"
+                                           id="f_discount_percentage"
                                            min="0"
                                            max="100"
                                            class="grow"
                                            style="background:transparent;outline:none;color:var(--text);"
-                                           value="{{ old('discount', $product->discount ?? 0) }}">
+                                           value="{{ old('discount_percentage', $product->discount_percentage ?? 0) }}">
                                 </label>
                             </div>
                         </div>
@@ -323,7 +323,7 @@
 
                     <div class="flex items-baseline gap-2 flex-wrap">
                         <span id="pPrice" class="text-2xl font-black" style="color:var(--electric);">
-                            {{ number_format($product->price, 2) }} EGP
+                            {{ number_format($product->final_price, 2) }} EGP
                         </span>
                         <span id="pOriginal" class="text-sm line-through" style="display:none;color:var(--text-muted);"></span>
                         <span id="pDiscountPill"
@@ -368,7 +368,7 @@ const fields = {
     cat:      document.getElementById('f_cat'),
     desc:     document.getElementById('f_desc'),
     price:    document.getElementById('f_price'),
-    discount: document.getElementById('f_discount'),
+    discount: document.getElementById('f_discount_percentage'),
     stock:    document.getElementById('f_stock'),
 };
 
@@ -428,7 +428,7 @@ function updatePreview() {
 
 Object.values(fields).forEach(f => f?.addEventListener('input', updatePreview));
 fields.cat.addEventListener('change', updatePreview);
-
+updatePreview();
 // Image preview
 document.getElementById('imageInput').addEventListener('change', function () {
     const file = this.files[0];

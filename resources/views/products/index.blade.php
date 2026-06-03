@@ -152,130 +152,126 @@
 
                 @else
 
-                {{-- Products Grid --}}
-                <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-                    @foreach($products as $product)
-                    @php
-                        $stock      = $product->stock;
-                        $finalPrice = number_format($product->price * (1 - ($product->discount ?? 0) / 100), 2);
-                        $origPrice  = number_format($product->price, 2);
-                        $hasDisc    = ($product->discount ?? 0) > 0;
-                    @endphp
 
-                    {{-- card: flex-col so image + body share full height --}}
-                    <div class="card bg-base-100 border border-base-300 shadow-sm flex flex-col
-                                hover:-translate-y-1 hover:border-warning/50 hover:shadow-lg
-                                transition-all duration-300 group overflow-hidden">
+                    {{-- Products Grid --}}
+                    {{-- Products Grid --}}
+                    <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 p-4">
+                        @foreach($products as $product)
+                            @php
+                                $stock = $product->stock;
 
-                        {{-- ── Image: FIXED height so all cards align ── --}}
-                        <figure class="relative overflow-hidden bg-base-200 flex-shrink-0 h-44 sm:h-48">
-                            <img src="{{ Storage::url($product->image_url) }}"
-                                 alt="{{ $product->name }}"
-                                 class="w-full h-full bg-white object-contain p-2 group-hover:scale-105 transition-transform duration-500"
-                                 loading="lazy"
-                                 onerror="this.src='{{ asset('images/placeholder.png') }}'">
+                                $finalPriceValue     = $product->final_price;
+                                $finalPriceFormatted = number_format($finalPriceValue, 2);
+                                $origPriceFormatted  = number_format($product->price, 2);
 
-                            {{-- TOP-RIGHT: discount --}}
-                            @if($hasDisc)
-                                <span class="absolute top-2 right-2
-                                             bg-error text-error-content text-[10px] font-black
-                                             px-2 py-0.5 rounded-full shadow">
-                                    -%{{ $product->discount }}
-                                </span>
-                            @endif
+                                $currentDiscount = $product->effective_discount;
+                                $hasDisc         = $currentDiscount > 0;
+                            @endphp
 
-                            {{-- TOP-LEFT: stock status --}}
-                            <span class="absolute top-2 left-2
-                                         text-[10px] font-bold px-2 py-0.5 rounded-full shadow
-                                         backdrop-blur-sm flex items-center gap-1
-                                         {{ $stock > 10
-                                            ? 'bg-success/20 border border-success/40 text-success'
-                                            : ($stock > 0
-                                               ? 'bg-warning/20 border border-warning/40 text-warning'
-                                               : 'bg-error/20 border border-error/40 text-error') }}">
-                                <span class="w-1.5 h-1.5 rounded-full
-                                             {{ $stock > 10 ? 'bg-success' : ($stock > 0 ? 'bg-warning animate-pulse' : 'bg-error') }}">
-                                </span>
-                                {{ $stock > 10 ? 'متوفر' : ($stock > 0 ? 'محدود' : 'نفذ') }}
-                            </span>
+                            {{-- الكارت الرئيسي --}}
+                            <div class="card bg-[#111317] border border-white/5 shadow-xl flex flex-col p-3.5 sm:p-4
+                    hover:-translate-y-1.5 hover:border-warning/40 hover:shadow-[0_0_25px_rgba(252,163,17,0.08)]
+                    transition-all duration-500 group overflow-hidden rounded-2xl relative">
 
-                            {{-- BOTTOM-RIGHT: category --}}
-                            @if($product->category)
-                                <span class="absolute bottom-2 right-2 hidden sm:inline-block
-                                             bg-base-100/70 backdrop-blur-sm
-                                             text-[10px] font-semibold text-base-content/70
-                                             px-2 py-0.5 rounded-full border border-base-300/50">
-                                    {{ $product->category->name }}
-                                </span>
-                            @endif
-                        </figure>
-
-                        {{-- ── Body ── --}}
-                        <div class="flex flex-col flex-1 p-3 sm:p-4 gap-2">
-
-                            {{-- Name: 2 lines max so short & long names align --}}
-                            <h3 class="font-black text-xs sm:text-sm leading-snug line-clamp-2 min-h-[2.4em]">
-                                {{ $product->name }}
-                            </h3>
-
-                            {{-- Description (desktop only) --}}
-                            <p class="hidden sm:block text-[11px] text-base-content/45 leading-relaxed line-clamp-2 flex-1">
-                                {{ $product->description }}
-                            </p>
-
-                            {{-- ── Price + stock label ── --}}
-                            <div class="flex items-end justify-between pt-2 border-t border-base-300 mt-auto">
-                                <div>
-                                    <p class="text-base sm:text-lg font-black text-warning leading-none">
-                                        {{ $finalPrice }}
-                                        <span class="text-[10px] font-normal text-base-content/50">ج.م</span>
-                                    </p>
-                                    @if($hasDisc)
-                                        <p class="text-[10px] line-through text-base-content/35 mt-0.5">{{ $origPrice }} ج.م</p>
-                                    @endif
-                                </div>
-                                @if($stock > 0 && $stock <= 10)
-                                    <span class="text-[10px] font-black text-warning leading-tight text-left">
-                                        ⚠ {{ $stock }}<br>فقط
-                                    </span>
-                                @endif
-                            </div>
-
-                            {{-- ── Actions ── --}}
-                            <div class="flex gap-2 mt-1">
-                                <form action="{{ route('cart.add', $product->id) }}" method="POST" class="flex-1 flex">
-                                    @csrf
-
-                                    <input type="hidden" name="name"     value="{{ $product->name }}">
-                                    <input type="hidden" name="price"    value="{{ $finalPrice }}">
-                                    <input type="hidden" name="image"    value="{{ $product->image_url }}">
-                                    <input type="hidden" name="quantity" value="1">
-                                    <button type="submit"
-                                            class="btn btn-sm flex-1 gap-1.5 font-black text-xs
-                                                   {{ $stock > 0 ? 'btn-warning' : 'btn-disabled opacity-50' }}"
-                                            {{ $stock <= 0 ? 'disabled' : '' }}>
-                                        <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                            <path stroke-linecap="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
-                                        </svg>
-                                        <span class="hidden sm:inline">{{ $stock <= 0 ? 'نفذ' : 'أضف للسلة' }}</span>
-                                        <span class="sm:hidden">{{ $stock <= 0 ? 'نفذ' : 'سلة' }}</span>
-                                    </button>
-                                </form>
-                                    <x-wishlist-button :product="$product" />
+                                {{-- 🔗 1. رابط اسم المنتج (يغطي المساحات الفارغة وعنوان المنتج) --}}
                                 <a href="{{ route('products.show', $product->id) }}"
-                                   class="btn btn-sm btn-ghost border border-base-300
-                                          hover:border-warning hover:text-warning
-                                          w-9 p-0 flex-shrink-0 transition-colors">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                        <path stroke-linecap="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                    </svg>
+                                   class="absolute inset-0 z-0 after:absolute after:inset-0"
+                                   aria-label="{{ $product->name }}">
                                 </a>
+
+                                {{-- 🔗 2. رابط الصورة المباشر: تم لف حاوية الصورة بالكامل داخل وسم الرابط لضمان قابلية الضغط --}}
+                                <a href="{{ route('products.show', $product->id) }}" class="relative z-20 block overflow-hidden rounded-xl">
+                                    <figure class="relative overflow-hidden bg-white flex-shrink-0 h-40 sm:h-48 p-3 border border-white/5 transition-transform duration-700 ease-out group-hover:scale-105">
+
+                                        <x-product-image
+                                            :product="$product"
+                                            :lazy="$loop->index >= 4"
+                                            class="w-full h-full object-contain"
+                                        />
+
+                                        {{-- شارات الصورة الحية تطفو فوق الرابط --}}
+                                        @if($hasDisc)
+                                            <span class="absolute top-2 right-2 z-30 bg-[#f87171] text-white text-[10px] font-black px-2 py-0.5 rounded-md shadow-sm">
+                         -%{{ $currentDiscount }}
+                        </span>
+                                        @endif
+
+                                        <span class="absolute top-2 left-2 z-30 text-[9px] font-bold px-2 py-0.5 rounded-md shadow-sm backdrop-blur-md flex items-center gap-1 border
+                                 {{ $stock > 10 ? 'bg-[#10b981]/10 border-[#10b981]/30 text-[#10b981]' : ($stock > 0 ? 'bg-[#fbbf24]/10 border-[#fbbf24]/30 text-[#fbbf24]' : 'bg-[#ef4444]/10 border-[#ef4444]/30 text-[#ef4444]') }}">
+                        <span class="w-1.5 h-1.5 rounded-full {{ $stock > 10 ? 'bg-[#10b981]' : ($stock > 0 ? 'bg-[#fbbf24] animate-pulse' : 'bg-[#ef4444]') }}"></span>
+                        {{ $stock > 10 ? 'متوفر' : ($stock > 0 ? 'محدود' : 'نفذ') }}
+                    </span>
+
+                                        @if($product->category)
+                                            <span class="absolute bottom-2 right-2 hidden sm:inline-block z-30 bg-[#1a1d24]/90 backdrop-blur-sm text-[9px] font-bold text-white/70 px-2 py-0.5 rounded border border-white/5">
+                            {{ $product->category->name }}
+                        </span>
+                                        @endif
+                                    </figure>
+                                </a>
+
+                                {{-- جسم الكارت السفلي (معزول لحماية الروابط والأزرار) --}}
+                                <div class="flex flex-col flex-1 gap-2.5 mt-3 relative z-10">
+
+                                    {{-- اسم المنتج --}}
+                                    <h3 class="font-bold text-xs sm:text-sm text-white/90 leading-snug line-clamp-2 min-h-[2.6em] group-hover:text-warning transition-colors duration-300">
+                                        {{ $product->name }}
+                                    </h3>
+
+                                    {{-- السعر --}}
+                                    <div class="flex items-end justify-between mt-auto pt-2 border-t border-white/5">
+                                        <div>
+                                            <p class="text-base sm:text-lg font-black text-warning leading-none flex items-baseline gap-0.5">
+                                                {{ $finalPriceFormatted }} <span class="text-[10px] font-normal text-white/40">ج.م</span>
+                                            </p>
+                                            @if($hasDisc)
+                                                <p class="text-[10px] line-through text-white/20 mt-0.5">{{ $origPriceFormatted }} ج.م</p>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    {{-- ── منطقة التحكم والأزرار الحية ── --}}
+                                    <div class="flex items-center gap-2 mt-1 relative z-20">
+
+                                        {{-- فورم أضف للسلة --}}
+                                        <form action="{{ route('cart.add', $product->id) }}" method="POST" class="flex-1 flex m-0 p-0">
+                                            @csrf
+                                            <input type="hidden" name="name"     value="{{ $product->name }}">
+                                            <input type="hidden" name="price"    value="{{ $finalPriceValue }}">
+                                            <input type="hidden" name="image"    value="{{ $product->image_url }}">
+                                            <input type="hidden" name="quantity" value="1">
+
+                                            <button type="submit"
+                                                    class="btn btn-sm h-9 min-h-0 flex-1 gap-1.5 font-bold text-xs rounded-xl border-none shadow-md transition-all duration-300
+                                       {{ $stock > 0 ? 'bg-warning text-black hover:bg-warning/80 shadow-warning/5' : 'bg-white/5 text-white/30 btn-disabled opacity-40' }}"
+                                                {{ $stock <= 0 ? 'disabled' : '' }}>
+                                                <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                    <path stroke-linecap="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                                </svg>
+                                                <span>{{ $stock <= 0 ? 'نفذ' : 'أضف للسلة' }}</span>
+                                            </button>
+                                        </form>
+
+                                        {{-- مكون زر المفضلة الذكي --}}
+                                        <x-wishlist-button :product="$product" />
+
+                                        {{-- زر التفاصيل والمعاينة السريع --}}
+                                        <div class="tooltip tooltip-top hover:before:bg-warning hover:before:text-black" data-tip="عرض المنتج">
+                                            <a href="{{ route('products.show', $product->id) }}"
+                                               class="btn btn-sm btn-square h-9 w-9 bg-[#1a1d24] hover:bg-warning hover:text-black border border-white/5 rounded-xl transition-all duration-300 text-white/70 flex items-center justify-center">
+                                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                    <path stroke-linecap="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                    <path stroke-linecap="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                                </svg>
+                                            </a>
+                                        </div>
+
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                        @endforeach
                     </div>
-                    @endforeach
-                </div>
+
 
                 @if($products->hasPages())
                     <div class="flex justify-center mt-8 sm:mt-10">
@@ -425,7 +421,6 @@
                             المخزون
                         </p>
                         @foreach([
-                            ['all',       '',          'bg-base-content/25', 'جميع المنتجات'],
                             ['available', 'bg-success', 'bg-success/15',     'متوفر فقط'],
                             ['low',       'bg-warning', 'bg-warning/15',     'كمية محدودة'],
                         ] as [$val, $dotBg, $activeBg, $label])

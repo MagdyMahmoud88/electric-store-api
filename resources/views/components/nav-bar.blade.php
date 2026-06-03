@@ -34,15 +34,17 @@
                 <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
                 </svg>
-                @php $cartCount = count(session()->get('cart', [])); @endphp
-                @if($cartCount > 0)
+                @php
+                    $cartCount = auth()->check()
+                        ? \App\Models\CartItem::where('user_id', auth()->id())->sum('quantity')
+                        : collect(session()->get('cart', []))->sum('quantity');
+                @endphp                @if($cartCount > 0)
                     <span class="cart-badge">{{ $cartCount }}</span>
                 @endif
             </a>
 
             {{-- Wishlist --}}
             @auth
-
                 <a href="{{ route('wishlist.index') }}"
                    class="nav-cart {{ request()->routeIs('wishlist.*') ? 'active' : '' }}"
                    title="المفضلة">
@@ -58,6 +60,68 @@
                     @endif
                 </a>
             @endauth
+
+            @can('admin')
+                @php
+                    $bellNotifications = auth()->user()->unreadNotifications()->latest()->take(10)->get();
+                    $bellCount         = auth()->user()->unreadNotifications()->count();
+                @endphp
+
+                <div style="position:relative;">
+                    <button id="bellBtn" onclick="toggleBellMenu()" class="nav-icon-btn" title="الإشعارات" style="position:relative;">
+                        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                        </svg>
+                        @if($bellCount > 0)
+                            <span id="bellBadge" class="cart-badge">{{ $bellCount }}</span>
+                        @else
+                            <span id="bellBadge" class="cart-badge" style="display:none;">0</span>
+                        @endif
+                    </button>
+
+                    <div id="bellMenu" style="display:none;position:absolute;left:0;top:calc(100% + 8px);width:300px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:9999;overflow:hidden;">
+
+                        {{-- Header --}}
+                        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);">
+                            <span style="font-size:13px;font-weight:700;">الإشعارات</span>
+                            @if($bellCount > 0)
+                                <form action="{{ route('admin.notifications.readAll') }}" method="POST">
+                                    @csrf
+                                    <button type="submit" style="background:none;border:none;font-size:12px;color:var(--primary);cursor:pointer;padding:0;">
+                                        تعليم الكل كمقروء
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+
+                        {{-- List --}}
+                        <div id="bellList" style="max-height:300px;overflow-y:auto;">
+                            @forelse($bellNotifications as $notification)
+                                <a href="{{ route('admin.notifications.read', $notification->id) }}"
+                                   style="display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);text-decoration:none;color:inherit;background:{{ $notification->read_at ? 'transparent' : 'rgba(226,75,74,0.05)' }};">
+                                    @unless($notification->read_at)
+                                        <span style="width:8px;height:8px;border-radius:50%;background:#E24B4A;flex-shrink:0;margin-top:4px;"></span>
+                                    @endunless
+                                    <div>
+                                        <p style="margin:0;font-size:13px;font-weight:{{ $notification->read_at ? '400' : '600' }};">
+                                            {{ $notification->data['message'] }}
+                                        </p>
+                                        <p style="margin:4px 0 0;font-size:11px;opacity:.6;">
+                                            {{ $notification->created_at->diffForHumans() }}
+                                        </p>
+                                    </div>
+                                </a>
+                            @empty
+                                <div style="padding:20px;text-align:center;font-size:13px;opacity:.5;">
+                                    لا توجد إشعارات جديدة
+                                </div>
+                            @endforelse
+                        </div>
+
+                    </div>
+                </div>
+            @endcan
 
             {{-- Theme Toggle --}}
             <button onclick="toggleTheme()" id="theme-btn" class="nav-icon-btn" title="تغيير الثيم">
@@ -94,13 +158,14 @@
                     <div id="userMenu" class="user-dropdown">
                         <div class="user-dropdown-email">{{ auth()->user()->email }}</div>
 
-                                <a href="{{ route('profile.index') }}" class="user-dropdown-item">
-    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round"
-              d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zM19 21v-1a7 7 0 00-14 0v1"/>
-    </svg>
-    الملف الشخصي
-</a>
+                        <a href="{{ route('profile.index') }}" class="user-dropdown-item">
+                            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zM19 21v-1a7 7 0 00-14 0v1"/>
+                            </svg>
+                            الملف الشخصي
+                        </a>
+
                         <a href="{{ route('cart.index') }}" class="user-dropdown-item">
                             <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
@@ -116,7 +181,28 @@
                             المفضلة
                         </a>
 
-                        {{-- ── لينك التقييمات للأدمن فقط ── --}}
+                        {{-- ✅ طلبات الإرجاع -- للمستخدم العادي فقط --}}
+                        @cannot('admin')
+                            <a href="{{ route('returns.index') }}"
+                               class="user-dropdown-item {{ request()->routeIs('returns.*') ? 'active' : '' }}">
+                                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          d="M16 15v-1a4 4 0 00-4-4H8m0 0l3 3m-3-3l3-3m9 14V5a2 2 0 00-2-2H6a2 2 0 00-2 2v16l4-2 4 2 4-2 4 2z"/>
+                                </svg>
+                                طلبات الإرجاع
+                                @php
+                                    $pendingReturns = \App\Models\ReturnRequest::where('user_id', auth()->id())
+                                        ->where('status', 'pending')->count();
+                                @endphp
+                                @if($pendingReturns > 0)
+                                    <span style="margin-right:auto;background:#f59e0b;color:#000;font-size:10px;font-weight:900;min-width:18px;height:18px;border-radius:99px;display:inline-flex;align-items:center;justify-content:center;padding:0 4px;">
+                                        {{ $pendingReturns }}
+                                    </span>
+                                @endif
+                            </a>
+                        @endcannot
+
+                        {{-- ── إدارة التقييمات للأدمن فقط ── --}}
                         @can('admin')
                             <a href="{{ route('admin.reviews.index') }}"
                                class="user-dropdown-item {{ request()->routeIs('admin.reviews.*') ? 'active' : '' }}">
@@ -134,9 +220,16 @@
                                     </span>
                                 @endif
                             </a>
+                            <a href="{{ route('admin.users.index') }}"
+                               class="user-dropdown-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                                إدارة المستخدمين
+                            </a>
                         @endcan
 
-                        <form action="{{ route('logout.destroy') }}" method="POST">
+                        <form action="{{ route('logout') }}" method="POST">
                             @csrf @method('DELETE')
                             <button type="submit" class="user-dropdown-logout">
                                 <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -150,7 +243,7 @@
             @endauth
 
             @guest
-                <a href="{{ route('login.index') }}"
+                <a href="{{ route('login') }}"
                    class="btn-nav-ghost {{ Request::is('login*') ? 'active' : '' }}">
                     دخول
                 </a>
@@ -172,7 +265,7 @@
     <a href="{{ route('welcome') }}" class="nav-link" style="display:flex;margin-bottom:4px;">الرئيسية</a>
     <a href="{{ route('products.index') }}" class="nav-link" style="display:flex;margin-bottom:4px;">المنتجات</a>
     @auth
-    <a href="{{ route('profile.index') }}" class="nav-link" style="display:flex;margin-bottom:4px;">الملف الشخصي</a>
+        <a href="{{ route('profile.index') }}" class="nav-link" style="display:flex;margin-bottom:4px;">الملف الشخصي</a>
         <a href="{{ route('wishlist.index') }}" class="nav-link" style="display:flex;margin-bottom:4px;">
             المفضلة
             @php $wc = auth()->user()->wishlists()->count(); @endphp
@@ -181,16 +274,129 @@
             @endif
         </a>
 
+        {{-- ✅ طلبات الإرجاع في الموبايل -- للمستخدم العادي فقط --}}
+        @cannot('admin')
+            <a href="{{ route('returns.index') }}"
+               class="nav-link {{ request()->routeIs('returns.*') ? 'active' : '' }}"
+               style="display:flex;margin-bottom:4px;">
+                طلبات الإرجاع
+                @if(isset($pendingReturns) && $pendingReturns > 0)
+                    <span class="cart-badge" style="margin-right:4px;">{{ $pendingReturns }}</span>
+                @endif
+            </a>
+        @endcannot
     @endauth
-    @can('admin')
 
+    @can('admin')
         <a href="{{ route('admin.dashboard') }}" class="nav-link" style="display:flex;margin-bottom:4px;">لوحة التحكم</a>
         <a href="{{ route('admin.reviews.index') }}" class="nav-link" style="display:flex;margin-bottom:4px;">إدارة التقييمات</a>
+        <a href="{{ route('admin.returns.index') }}" class="nav-link" style="display:flex;margin-bottom:4px;">طلبات الإرجاع</a>
+        <a href="{{ route('admin.users.index') }}"
+           class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}"
+           style="display:flex;margin-bottom:4px;">
+            إدارة المستخدمين
+        </a>
     @endcan
 </div>
 
-{{-- Theme Script --}}
+
 <script>
+    @auth
+    @can('admin')
+    const BELL_FETCH_URL  = '{{ route("admin.notifications.fetch") }}';
+    const BELL_COUNT_URL  = '{{ route("admin.notifications.count") }}';
+    const CSRF_TOKEN      = '{{ csrf_token() }}';
+
+    function toggleBellMenu() {
+        const menu = document.getElementById('bellMenu');
+        if (!menu) return;
+        if (menu.style.display === 'none') {
+            loadNotifications();
+            menu.style.display = 'block';
+        } else {
+            menu.style.display = 'none';
+        }
+    }
+
+    function loadNotifications() {
+        fetch(BELL_FETCH_URL, {
+            headers: { 'Accept': 'application/json' }
+        })
+            .then(r => r.json())
+            .then(data => {
+                const badge = document.getElementById('bellBadge');
+                const list  = document.getElementById('bellList');
+
+                if (badge) {
+                    if (data.count > 0) {
+                        badge.textContent = data.count;
+                        badge.style.display = 'flex';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+
+                if (!list) return;
+
+                if (!data.notifications || data.notifications.length === 0) {
+                    list.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;opacity:.5;">لا توجد إشعارات جديدة</div>';
+                    return;
+                }
+
+                list.innerHTML = data.notifications.map(n => `
+                <div onclick="readNotification('${n.id}')"
+                     style="display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;background:rgba(226,75,74,0.05);">
+                    <span style="width:8px;height:8px;border-radius:50%;background:#E24B4A;flex-shrink:0;margin-top:4px;"></span>
+                    <div>
+                        <p style="margin:0;font-size:13px;font-weight:600;color:var(--text);">${n.message}</p>
+                        <p style="margin:4px 0 0;font-size:11px;opacity:.6;color:var(--text);">${n.time}</p>
+                    </div>
+                </div>
+            `).join('');
+            })
+            .catch(err => console.error('Bell error:', err));
+    }
+
+    function readNotification(id) {
+        fetch(`/admin/notifications/${id}/read`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': CSRF_TOKEN,
+                'Accept': 'application/json',
+            }
+        }).then(() => loadNotifications())
+            .catch(err => console.error(err));
+    }
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('#bellBtn') && !e.target.closest('#bellMenu')) {
+            const menu = document.getElementById('bellMenu');
+            if (menu) menu.style.display = 'none';
+        }
+    });
+
+    setInterval(function() {
+        fetch(BELL_COUNT_URL, {
+            headers: { 'Accept': 'application/json' }
+        })
+            .then(r => r.json())
+            .then(data => {
+                const badge = document.getElementById('bellBadge');
+                if (!badge) return;
+                if (data.count > 0) {
+                    badge.textContent = data.count;
+                    badge.style.display = 'flex';
+                } else {
+                    badge.style.display = 'none';
+                }
+            })
+            .catch(() => {});
+    }, 30000);
+
+    @endcan
+    @endauth
+
+    {{-- Theme --}}
     function updateThemeIcons(theme) {
         const sunIcon  = document.getElementById('sun-icon');
         const moonIcon = document.getElementById('moon-icon');

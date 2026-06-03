@@ -23,6 +23,10 @@ class DatabaseSeeder extends Seeder
         ]);
 
             \App\Models\Category::factory(5)->create();
-            \App\Models\Product::factory(50)->create();
+          //  \App\Models\Product::factory(50)->create();
+
+            $this->call([
+                AdminSeeder::class,
+                CouponSeeder::class]);
     }
 }

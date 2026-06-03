@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Review;
 use App\Models\Product;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -37,8 +38,9 @@ class ReviewController extends Controller
             'product_id' => $productId,
             'rating'     => $request->rating,
             'comment'    => $request->comment,
-            'is_approved' => $user->can('admin') ? true : false, // ينتظر موافقة الأدمن
+            'is_approved' => $user->isAdmin(),
         ]);
+        ActivityLogger::reviewAdded($user, $review);
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -68,6 +70,7 @@ class ReviewController extends Controller
             'comment'     => $request->comment,
             'is_approved' => false, // يرجع للمراجعة بعد التعديل
         ]);
+        ActivityLogger::reviewUpdated(Auth::user(), $review);
 
          return redirect()->route('products.show', $productId)
                      ->with('success', 'تم تعديل تقييمك بنجاح');
@@ -79,7 +82,7 @@ class ReviewController extends Controller
         Review::where('user_id', Auth::id())
             ->where('product_id', $productId)
             ->delete();
-
+        ActivityLogger::reviewDeleted(Auth::user(), $productId);
          return redirect()->route('products.show', $productId)
                      ->with('success', 'تم حذف تقييمك');
     }
