@@ -129,8 +129,7 @@ php artisan serve
 ## 👨‍💻 المطور
 
 **اسمك هنا**
-- GitHub: [@YOUR_USERNAME](https://github.com/YOUR_USERNAME)
-- LinkedIn: [linkedin.com/in/YOUR_PROFILE](https://linkedin.com/in/YOUR_PROFILE)
+- GitHub: [@MagdyMahmoud88](https://github.com/MagdyMahmoud88)
 
 ---
 
