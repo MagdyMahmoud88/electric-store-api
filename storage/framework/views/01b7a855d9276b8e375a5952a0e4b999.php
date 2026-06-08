@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>Invoice #{{ $order->order_number }}</title>
+    <title>Invoice #<?php echo e($order->order_number); ?></title>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
 
@@ -131,51 +131,53 @@
 </head>
 <body>
 
-{{-- ══ HEADER ══ --}}
+
 <div class="header-top">
     <table class="h-wrap" cellpadding="0" cellspacing="0">
         <tr>
             <td>
                 <div class="h-brand">
-                    {{ $order->t->store_name }} <span class="h-gold">⚡</span>
+                    <?php echo e($order->t->store_name); ?> <span class="h-gold">⚡</span>
                 </div>
                 <div class="h-sub">ELECTRIC STORE — EGYPT</div>
             </td>
             <td style="text-align:right;">
                 <div class="h-badge">TAX INVOICE</div><br>
-                <div class="h-num"># {{ $order->order_number }}</div>
-                <div class="h-date">{{ $order->created_at->format('d / m / Y') }}</div>
+                <div class="h-num"># <?php echo e($order->order_number); ?></div>
+                <div class="h-date"><?php echo e($order->created_at->format('d / m / Y')); ?></div>
             </td>
         </tr>
     </table>
 </div>
 <div class="header-accent"></div>
 
-{{-- ══ STATUS STRIP ══ --}}
+
 <div class="status-strip">
     <table class="ss-wrap" cellpadding="0" cellspacing="0">
         <tr>
             <td class="ss-cell" style="width:22%;">
-                <div class="ss-lbl">{{ $order->t->payment_status_lbl }}</div>
+                <div class="ss-lbl"><?php echo e($order->t->payment_status_lbl); ?></div>
                 <div class="ss-val">
-                    <span class="badge {{ $order->payment_badge_class }}">
-                        {{ $order->formatted_payment_status }}
+                    <span class="badge <?php echo e($order->payment_badge_class); ?>">
+                        <?php echo e($order->formatted_payment_status); ?>
+
                     </span>
                 </div>
             </td>
             <td class="ss-cell ss-sep" style="width:28%;">
-                <div class="ss-lbl">{{ $order->t->payment_method_lbl }}</div>
-                <div class="ss-val">{{ $order->formatted_payment_method }}</div>
+                <div class="ss-lbl"><?php echo e($order->t->payment_method_lbl); ?></div>
+                <div class="ss-val"><?php echo e($order->formatted_payment_method); ?></div>
             </td>
             <td class="ss-cell ss-sep" style="width:25%;">
-                <div class="ss-lbl">{{ $order->t->order_date_lbl }}</div>
-                <div class="ss-val">{{ $order->created_at->format('d M Y') }}</div>
+                <div class="ss-lbl"><?php echo e($order->t->order_date_lbl); ?></div>
+                <div class="ss-val"><?php echo e($order->created_at->format('d M Y')); ?></div>
             </td>
             <td class="ss-cell ss-sep" style="width:25%;">
-                <div class="ss-lbl">{{ $order->t->order_status_lbl }}</div>
+                <div class="ss-lbl"><?php echo e($order->t->order_status_lbl); ?></div>
                 <div class="ss-val">
-                    <span class="badge {{ $order->status_badge_class }}">
-                        {{ $order->formatted_status }}
+                    <span class="badge <?php echo e($order->status_badge_class); ?>">
+                        <?php echo e($order->formatted_status); ?>
+
                     </span>
                 </div>
             </td>
@@ -183,61 +185,61 @@
     </table>
 </div>
 
-{{-- ══ BODY ══ --}}
+
 <div class="body">
 
-    {{-- ── Info Grid ── --}}
+    
     <div class="info-wrap">
         <table class="info-tbl" cellpadding="0" cellspacing="0">
             <tr>
-                {{-- عميل --}}
+                
                 <td class="info-td-r">
-                    <div class="info-heading">{{ $order->t->customer_section }}</div>
+                    <div class="info-heading"><?php echo e($order->t->customer_section); ?></div>
 
                     <div class="info-row">
-                        <div class="info-key">{{ $order->t->name_lbl }}</div>
-                        <div class="info-val">{{ $order->formatted_customer_name }}</div>
+                        <div class="info-key"><?php echo e($order->t->name_lbl); ?></div>
+                        <div class="info-val"><?php echo e($order->formatted_customer_name); ?></div>
                     </div>
 
-                    @if(optional($order->address)->phone)
+                    <?php if(optional($order->address)->phone): ?>
                         <div class="info-row">
-                            <div class="info-key">{{ $order->t->phone_lbl }}</div>
-                            <div class="info-ltr">{{ optional($order->address)->phone }}</div>
+                            <div class="info-key"><?php echo e($order->t->phone_lbl); ?></div>
+                            <div class="info-ltr"><?php echo e(optional($order->address)->phone); ?></div>
                         </div>
-                    @endif
+                    <?php endif; ?>
 
                     <div class="info-row">
-                        <div class="info-key">{{ $order->t->address_lbl }}</div>
-                        <div class="info-val">{{ $order->formatted_street }}</div>
+                        <div class="info-key"><?php echo e($order->t->address_lbl); ?></div>
+                        <div class="info-val"><?php echo e($order->formatted_street); ?></div>
                     </div>
 
                     <div class="info-row">
-                        <div class="info-key">{{ $order->t->city_lbl }}</div>
-                        <div class="info-val">{{ $order->formatted_city }} — {{ $order->formatted_governorate }}</div>
+                        <div class="info-key"><?php echo e($order->t->city_lbl); ?></div>
+                        <div class="info-val"><?php echo e($order->formatted_city); ?> — <?php echo e($order->formatted_governorate); ?></div>
                     </div>
                 </td>
 
-                {{-- فاتورة --}}
+                
                 <td class="info-td-l">
-                    <div class="info-heading">{{ $order->t->invoice_section }}</div>
+                    <div class="info-heading"><?php echo e($order->t->invoice_section); ?></div>
 
                     <div class="info-row">
-                        <div class="info-key">{{ $order->t->order_num_lbl }}</div>
-                        <div class="info-ltr"># {{ $order->order_number }}</div>
+                        <div class="info-key"><?php echo e($order->t->order_num_lbl); ?></div>
+                        <div class="info-ltr"># <?php echo e($order->order_number); ?></div>
                     </div>
 
                     <div class="info-row">
-                        <div class="info-key">{{ $order->t->issue_date_lbl }}</div>
-                        <div class="info-ltr">{{ $order->created_at->format('Y-m-d') }}</div>
+                        <div class="info-key"><?php echo e($order->t->issue_date_lbl); ?></div>
+                        <div class="info-ltr"><?php echo e($order->created_at->format('Y-m-d')); ?></div>
                     </div>
 
                     <div class="info-row">
-                        <div class="info-key">{{ $order->t->store_lbl }}</div>
-                        <div class="info-val">{{ $order->t->store_name }} ⚡</div>
+                        <div class="info-key"><?php echo e($order->t->store_lbl); ?></div>
+                        <div class="info-val"><?php echo e($order->t->store_name); ?> ⚡</div>
                     </div>
 
                     <div class="info-row">
-                        <div class="info-key">{{ $order->t->email_lbl }}</div>
+                        <div class="info-key"><?php echo e($order->t->email_lbl); ?></div>
                         <div class="info-ltr">info@electric-store.com</div>
                     </div>
                 </td>
@@ -245,32 +247,32 @@
         </table>
     </div>
 
-    {{-- ── Items ── --}}
-    <div class="sec-lbl">{{ $order->t->products_section }}</div>
+    
+    <div class="sec-lbl"><?php echo e($order->t->products_section); ?></div>
     <table class="items-tbl" cellpadding="0" cellspacing="0">
         <thead>
         <tr>
             <th class="c" style="width:36px;">#</th>
-            <th class="r">{{ $order->t->product_col }}</th>
-            <th class="c" style="width:70px;">{{ $order->t->qty_col }}</th>
-            <th class="l" style="width:115px;">{{ $order->t->unit_price_col }}</th>
-            <th class="l" style="width:115px;">{{ $order->t->total_col }}</th>
+            <th class="r"><?php echo e($order->t->product_col); ?></th>
+            <th class="c" style="width:70px;"><?php echo e($order->t->qty_col); ?></th>
+            <th class="l" style="width:115px;"><?php echo e($order->t->unit_price_col); ?></th>
+            <th class="l" style="width:115px;"><?php echo e($order->t->total_col); ?></th>
         </tr>
         </thead>
         <tbody>
-        @foreach($order->items as $idx => $item)
+        <?php $__currentLoopData = $order->items; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $idx => $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
             <tr>
-                <td class="c"><span class="idx-circle">{{ $idx + 1 }}</span></td>
-                <td class="r" style="font-weight:700; color:#111;">{{ $item->formatted_name }}</td>
-                <td class="c" style="font-weight:700;">{{ $item->quantity }}</td>
-                <td class="l price-v">{{ number_format($item->price, 0) }} {{ $order->t->currency }}</td>
-                <td class="l total-v">{{ number_format($item->price * $item->quantity, 0) }} {{ $order->t->currency }}</td>
+                <td class="c"><span class="idx-circle"><?php echo e($idx + 1); ?></span></td>
+                <td class="r" style="font-weight:700; color:#111;"><?php echo e($item->formatted_name); ?></td>
+                <td class="c" style="font-weight:700;"><?php echo e($item->quantity); ?></td>
+                <td class="l price-v"><?php echo e(number_format($item->price, 0)); ?> <?php echo e($order->t->currency); ?></td>
+                <td class="l total-v"><?php echo e(number_format($item->price * $item->quantity, 0)); ?> <?php echo e($order->t->currency); ?></td>
             </tr>
-        @endforeach
+        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         </tbody>
     </table>
 
-    {{-- ── Totals ── --}}
+    
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:22px;">
         <tr>
             <td style="width:52%;"></td>
@@ -278,36 +280,37 @@
                 <div class="totals-inner">
 
                     <div class="t-row">
-                        <div class="t-lbl">{{ $order->t->subtotal_lbl }}</div>
-                        <div class="t-val">{{ number_format($order->subtotal, 0) }} {{ $order->t->currency }}</div>
+                        <div class="t-lbl"><?php echo e($order->t->subtotal_lbl); ?></div>
+                        <div class="t-val"><?php echo e(number_format($order->subtotal, 0)); ?> <?php echo e($order->t->currency); ?></div>
                     </div>
 
-                    @if($order->discount > 0)
+                    <?php if($order->discount > 0): ?>
                         <div class="t-row">
-                            <div class="t-lbl">{{ $order->t->discount_lbl }}</div>
-                            <div class="t-val v-green">- {{ number_format($order->discount, 0) }} {{ $order->t->currency }}</div>
+                            <div class="t-lbl"><?php echo e($order->t->discount_lbl); ?></div>
+                            <div class="t-val v-green">- <?php echo e(number_format($order->discount, 0)); ?> <?php echo e($order->t->currency); ?></div>
                         </div>
-                    @endif
+                    <?php endif; ?>
 
                     <div class="t-row">
-                        <div class="t-lbl">{{ $order->t->shipping_lbl }}</div>
+                        <div class="t-lbl"><?php echo e($order->t->shipping_lbl); ?></div>
                         <div class="t-val">
-                            @if($order->shipping == 0)
-                                <span class="v-green">{{ $order->t->free_shipping }}</span>
-                            @else
-                                {{ number_format($order->shipping, 0) }} {{ $order->t->currency }}
-                            @endif
+                            <?php if($order->shipping == 0): ?>
+                                <span class="v-green"><?php echo e($order->t->free_shipping); ?></span>
+                            <?php else: ?>
+                                <?php echo e(number_format($order->shipping, 0)); ?> <?php echo e($order->t->currency); ?>
+
+                            <?php endif; ?>
                         </div>
                     </div>
 
                     <div class="t-row">
-                        <div class="t-lbl">{{ $order->t->tax_lbl }} (14%)</div>
-                        <div class="t-val">{{ number_format($order->tax, 0) }} {{ $order->t->currency }}</div>
+                        <div class="t-lbl"><?php echo e($order->t->tax_lbl); ?> (14%)</div>
+                        <div class="t-val"><?php echo e(number_format($order->tax, 0)); ?> <?php echo e($order->t->currency); ?></div>
                     </div>
 
                     <div class="t-row t-grand">
-                        <div class="t-lbl">{{ $order->t->grand_total_lbl }}</div>
-                        <div class="t-val">{{ number_format($order->total, 0) }} {{ $order->t->currency }}</div>
+                        <div class="t-lbl"><?php echo e($order->t->grand_total_lbl); ?></div>
+                        <div class="t-val"><?php echo e(number_format($order->total, 0)); ?> <?php echo e($order->t->currency); ?></div>
                     </div>
 
                 </div>
@@ -315,31 +318,34 @@
         </tr>
     </table>
 
-</div>{{-- end .body --}}
+</div>
 
-{{-- ══ FOOTER ══ --}}
+
 <div class="footer-bar">
     <table class="ft-tbl" cellpadding="0" cellspacing="0">
         <tr>
             <td>
-                <div class="ft-brand">{{ $order->t->store_name }} <span class="ft-gold">⚡</span></div>
+                <div class="ft-brand"><?php echo e($order->t->store_name); ?> <span class="ft-gold">⚡</span></div>
                 <div class="ft-sub">ELECTRIC STORE — EGYPT</div>
             </td>
             <td style="text-align:right;">
                 <div class="ft-note">
-                    {{ $order->t->footer_note1 }}<br>
-                    {{ $order->t->footer_note2 }} ⚡
+                    <?php echo e($order->t->footer_note1); ?><br>
+                    <?php echo e($order->t->footer_note2); ?> ⚡
                 </div>
             </td>
         </tr>
     </table>
     <hr class="ft-hr">
     <div class="ft-btm">
-        ORDER: {{ $order->order_number }}
+        ORDER: <?php echo e($order->order_number); ?>
+
         &nbsp;•&nbsp;
-        {{ $order->t->footer_no_stamp }}
+        <?php echo e($order->t->footer_no_stamp); ?>
+
     </div>
 </div>
 
 </body>
 </html>
+<?php /**PATH C:\Users\USER\Herd\electric-store-api\resources\views/admin/invoices/pdf.blade.php ENDPATH**/ ?>
