@@ -128,7 +128,6 @@ php artisan serve
 
 ## 👨‍💻 المطور
 
-**اسمك هنا**
 - GitHub: [@MagdyMahmoud88](https://github.com/MagdyMahmoud88)
 
 ---
