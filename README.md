@@ -75,7 +75,7 @@
 
 ```bash
 # 1. Clone المشروع
-git clone https://github.com/YOUR_USERNAME/electric-tools-store.git
+git clone https://github.com/MagdyMahmoud88/electric-tools-store.git
 cd electric-tools-store
 
 # 2. تثبيت الـ dependencies
